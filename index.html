@@ -18,11 +18,33 @@ html,body{height:100%}
 body{display:flex;flex-direction:column;overflow:hidden}
 body.embed .app-header,body.embed [data-guard-barra]{display:none}
 body.embed .wrap{padding:0;grid-template-columns:1fr;gap:0}
-body.embed .lateral{display:none}
+body.embed .lateral,body.embed .trilho{display:none}
 body.embed .pane{border:0;border-radius:0;box-shadow:none}
 
 .wrap{flex:1;min-height:0;width:100%;max-width:1560px;margin:0 auto;
-  padding:12px 16px 14px;display:grid;grid-template-columns:312px 1fr;gap:12px}
+  padding:12px 16px 14px;display:grid;grid-template-columns:58px 312px 1fr;gap:12px}
+
+/* -------- trilho de conversas (estilo Bitrix) -------- */
+.trilho{display:flex;flex-direction:column;align-items:center;gap:9px;padding:10px 7px;
+  overflow-y:auto;overscroll-behavior:contain;background:var(--card);border:1px solid var(--line);
+  border-radius:10px;box-shadow:var(--shadow);scrollbar-width:none}
+.trilho::-webkit-scrollbar{width:0;height:0}
+.tr-eu{flex:0 0 auto;position:relative;width:40px;height:40px;border-radius:50%;display:grid;
+  place-items:center;background:var(--wine);color:#fff;font:700 12px Archivo,sans-serif;
+  border:2px solid var(--wine-soft)}
+.tr-risco{flex:0 0 auto;width:26px;height:1px;background:var(--line);margin:1px 0 2px}
+.tr-item{position:relative;flex:0 0 auto;width:40px;height:40px;border-radius:13px;display:grid;
+  place-items:center;color:#fff;font:700 12px Archivo,sans-serif;cursor:pointer;opacity:.38;
+  border:2px solid transparent;transition:opacity .15s,transform .12s}
+.tr-item:hover{opacity:1;transform:translateY(-1px)}
+.tr-item.nova{opacity:1}
+.tr-item[aria-selected="true"]{opacity:1;
+  box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--wine)}
+.tr-selo{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;
+  border-radius:9px;background:var(--neg);color:#fff;font:700 10px Archivo,sans-serif;
+  display:grid;place-items:center;border:2px solid var(--card)}
+.tr-selo.at{background:var(--s2)}
+.tr-vazio{font-size:9.5px;color:var(--ink-3);text-align:center;line-height:1.3;padding:6px 0}
 .pane{background:var(--card);border:1px solid var(--line);border-radius:10px;
   box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0;overflow:hidden}
 .pane-hd{display:flex;align-items:center;gap:8px;padding:9px 12px 8px;
@@ -34,7 +56,7 @@ body.embed .pane{border:0;border-radius:0;box-shadow:none}
 
 button{font-family:"Archivo",Arial,sans-serif}
 .bt{font:600 11.5px Archivo,sans-serif;border:1px solid var(--line);border-radius:8px;
-  background:var(--card);color:var(--ink-2);padding:5px 10px;cursor:pointer}
+  background:var(--card);color:var(--ink-2);padding:5px 10px;cursor:pointer;white-space:nowrap}
 .bt:hover{border-color:var(--wine-soft);color:var(--wine)}
 .bt.pri{background:var(--wine);border-color:var(--wine);color:#fff}
 .bt.pri:hover{background:var(--wine-deep);color:#fff}
@@ -83,6 +105,15 @@ label.cmp>input,label.cmp>select,label.cmp>textarea{font-weight:400;letter-spaci
 .thread-hd .tit{font-weight:700;font-size:13.5px;line-height:1.15}
 .thread-hd .ctx{font-size:10.5px;color:var(--ink-3)}
 .thread-hd .ctx a{color:var(--s3)}
+/* pilha de participantes: discreta no cabeçalho, abre a lista ao clicar */
+.avstack{display:flex;align-items:center;cursor:pointer;padding:2px;margin-right:6px}
+.avstack .av{width:24px;height:24px;font-size:9px;border:2px solid var(--card);
+  margin-left:-7px;box-shadow:0 1px 2px rgba(38,37,42,.12)}
+.avstack .av:first-child{margin-left:0}
+.avstack .av.mais{background:var(--chip);color:var(--ink-2);font-weight:700}
+.avstack .av.ia{background:var(--s3)}
+.avstack:hover .av{border-color:var(--wine-soft)}
+@media (max-width:560px){.avstack .av:nth-child(n+4){display:none}}
 .msgs{padding:14px 14px 6px;display:flex;flex-direction:column;gap:9px;background:var(--sunk)}
 .dia{align-self:center;font:700 9.5px Archivo,sans-serif;letter-spacing:.09em;
   text-transform:uppercase;color:var(--ink-3);background:var(--card);border:1px solid var(--line);
@@ -119,6 +150,31 @@ label.cmp>input,label.cmp>select,label.cmp>textarea{font-weight:400;letter-spaci
 .msg.meu .anexo{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
 .anexo img{max-width:230px;border-radius:6px;display:block}
 .mencao{background:var(--s2);color:#fff;border-radius:4px;padding:0 3px;font-weight:600}
+
+/* -------- áudio -------- */
+.audio{display:flex;align-items:center;gap:8px;margin-top:5px;padding:5px 9px;
+  border:1px solid var(--line);border-radius:20px;background:var(--sunk);font-size:11.5px;
+  cursor:pointer;color:var(--ink);min-width:170px}
+.msg.meu .audio{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
+.audio .play{width:22px;height:22px;border-radius:50%;background:var(--wine);color:#fff;
+  display:grid;place-items:center;font-size:10px;flex:0 0 auto}
+.msg.meu .audio .play{background:#fff;color:var(--wine)}
+.audio .onda{flex:1;height:14px;background:repeating-linear-gradient(90deg,
+  currentColor 0 2px,transparent 2px 5px);opacity:.35;border-radius:2px}
+.audio audio{width:100%;height:32px}
+.gravando{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--neg);
+  background:var(--chip);border:1px solid var(--neg);border-radius:8px;padding:6px 10px;
+  margin-bottom:6px}
+.gravando .bolinha{width:9px;height:9px;border-radius:50%;background:var(--neg);
+  animation:pulsa 1s infinite}
+@keyframes pulsa{50%{opacity:.25}}
+
+/* -------- IA -------- */
+.msg.ia .bolha{border-color:var(--s3);border-left:3px solid var(--s3);background:var(--card)}
+.msg.ia .msg-autor{color:var(--s3)}
+.bt.ia{border-color:var(--s3);color:var(--s3)}
+.bt.ia[aria-pressed="true"]{background:var(--s3);border-color:var(--s3);color:#fff}
+.ia-dica{font-size:10.5px;color:var(--ink-3);margin-top:5px}
 
 /* -------- composer -------- */
 .comp{flex:0 0 auto;border-top:1px solid var(--line);padding:8px 10px;background:var(--card)}
@@ -193,7 +249,9 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
 .aviso.erro{background:var(--neg);color:#fff}
 
 @media (max-width:900px){
-  .wrap{grid-template-columns:1fr}
+  .wrap{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .trilho{flex-direction:row;padding:7px 8px;gap:8px;overflow-x:auto;overflow-y:hidden}
+  .tr-risco{width:1px;height:26px;margin:0 2px}
   .lateral{display:none}
   body.ver-lista .lateral{display:flex}
   body.ver-lista .conversa{display:none}
@@ -216,12 +274,16 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
     <button class="header-chip" id="btNova">Nova conversa</button>
     <button class="header-chip" id="btAdm" hidden>Administração</button>
     <button class="header-chip" id="btVoltarChat" hidden>Voltar ao chat</button>
+    <button class="header-chip" id="btSom" title="Aviso sonoro de mensagem nova">&#128276;</button>
     <button class="header-chip" id="btTema" title="Claro / escuro">◐</button>
   </div>
 </header>
 
 <!-- ============================ CHAT ============================ -->
 <div class="wrap">
+  <!-- trilho: as conversas de quem está logado, sempre à mão -->
+  <aside class="trilho" id="trilho"></aside>
+
   <!-- lista de conversas -->
   <aside class="pane lateral">
     <div class="busca-lateral">
@@ -246,6 +308,9 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
         <div class="tit" id="convTitulo">Selecione uma conversa</div>
         <div class="ctx" id="convCtx"></div>
       </div>
+      <div class="avstack" id="avMembros" title="Participantes"></div>
+      <button class="bt min ia" id="btIa" hidden aria-pressed="false"
+              title="Colocar a IA nesta conversa">IA</button>
       <button class="bt min" id="btMembros" hidden>Participantes</button>
       <button class="bt min" id="btBuscaConv" hidden>Buscar</button>
       <button class="bt min" id="btMais" hidden>⋯</button>
@@ -262,11 +327,20 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
         <span style="flex:1" id="anxTxt"></span>
         <button class="bt min" id="anxCancel">✕</button>
       </div>
+      <div class="gravando" id="gravBanner" hidden>
+        <span class="bolinha"></span>
+        <span style="flex:1">Gravando… <b id="gravTempo">0:00</b></span>
+        <button class="bt min" id="gravCancel">Descartar</button>
+        <button class="bt min pri" id="gravParar">Concluir</button>
+      </div>
       <div class="caixa" style="position:relative">
         <div class="sugest" id="sugest" hidden></div>
         <button class="bt ic" id="btAnexo" title="Anexar arquivo">📎</button>
+        <button class="bt ic" id="btAudio" title="Gravar mensagem de áudio">&#127908;</button>
         <input type="file" id="arquivo" hidden>
         <textarea id="entrada" rows="1" placeholder="Escreva uma mensagem…  (@ menciona alguém, Enter envia)"></textarea>
+        <button class="bt ia" id="btPerguntarIa" hidden
+                title="Mandar o que está escrito para a IA">&#10024; IA</button>
         <button class="bt pri" id="btEnviar">Enviar</button>
       </div>
     </div>
@@ -282,6 +356,7 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
       <button class="tab" data-a="conversas">Conversas</button>
       <button class="tab" data-a="webhooks">Integrações</button>
       <button class="tab" data-a="automacoes">Automações</button>
+      <button class="tab" data-a="ia">IA</button>
       <button class="tab" data-a="eventos">Fila de eventos</button>
       <button class="tab" data-a="config">Configurações</button>
     </div>
@@ -312,11 +387,51 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
     </div>
 
     <div class="aba" id="aba-automacoes">
-      <p class="dica">Regras que rodam no banco quando alguém escreve. Condições disponíveis:
-        tipo de conversa, tipo de contexto (ex.: <code>funil_card</code>) e palavras-chave.
-        Ações: postar mensagem automática, adicionar participante e disparar webhook.</p>
-      <div class="linha" style="margin:10px 0"><button class="bt pri" id="btNovaAuto">Nova automação</button></div>
+      <p class="dica">Duas famílias de regra, ambas executadas pelo banco:
+        <strong>ao criar um card</strong> (monta a roda de conversa antes de alguém abrir o card)
+        e <strong>ao chegar mensagem</strong> (responde, avisa, chama gente).</p>
+      <div class="linha" style="margin:10px 0">
+        <button class="bt pri" id="btNovaAutoCard">Nova automação de card</button>
+        <button class="bt" id="btNovaAuto">Nova automação de mensagem</button>
+      </div>
       <table id="tbAutomacoes"></table>
+    </div>
+
+    <div class="aba" id="aba-ia">
+      <p class="dica">Cada conversa tem um assento reservado para a IA. O chat guarda o pedido
+        na fila (<code>ia.solicitada</code>, com as 20 últimas mensagens e o contexto do card) e
+        grava a resposta por <code>chat_ia_responder</code>. Quem pensa é um serviço externo —
+        uma Edge Function ou um cenário do Make lendo a fila. Enquanto ele não existir, dá para
+        testar a ligação escrevendo a resposta à mão aqui embaixo.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;
+                  max-width:760px;margin-top:12px">
+        <label class="cmp">Nome que a IA usa nas mensagens
+          <input id="iaNome" placeholder="Assistente WGI"></label>
+        <label class="cmp">Disponível nas conversas
+          <select id="iaAtiva">
+            <option value="1">Sim — dá para ligar em cada conversa</option>
+            <option value="0">Não — botão escondido</option>
+          </select></label>
+        <label class="cmp">Ligar sozinha nas conversas de card
+          <select id="iaAuto">
+            <option value="0">Não</option>
+            <option value="1">Sim</option>
+          </select></label>
+      </div>
+      <div class="linha" style="margin-top:14px"><button class="bt pri" id="btSalvarIa">Salvar IA</button></div>
+
+      <div class="linha" style="margin-top:22px;align-items:flex-end">
+        <label class="cmp" style="flex:1;min-width:240px">Conversa (id) para um teste de resposta
+          <select id="iaTesteConv"></select></label>
+        <label class="cmp" style="flex:2;min-width:240px">Texto da resposta
+          <input id="iaTesteTxt" placeholder="Resumo do card: …"></label>
+        <button class="bt" id="btTesteIa">Responder como IA</button>
+      </div>
+      <p class="dica" style="margin-top:14px">Contrato para quem for escrever o serviço:
+        ler <code>chat_eventos</code> onde <code>tipo='ia.solicitada'</code> e
+        <code>status='pendente'</code>; responder com
+        <code>chat_ia_responder(p_conversa, p_texto, p_evento)</code> usando a
+        <em>service key</em>. A função já marca o evento como enviado.</p>
     </div>
 
     <div class="aba" id="aba-eventos">
@@ -427,6 +542,36 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
   </div>
 </div></div>
 
+<div class="modal" id="mdAutoCard"><div class="modal-cx">
+  <div class="modal-hd"><h3>Automação ao criar card</h3></div>
+  <div class="modal-bd">
+    <input type="hidden" id="acId">
+    <p class="dica">Quando nascer um card no funil escolhido, o bate-papo dele já é criado
+      com estas pessoas dentro — ninguém precisa abrir o card para a conversa existir.</p>
+    <label class="cmp">Nome da regra<input id="acNome" placeholder="Ex.: Pedido novo — comercial e cadastro"></label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label class="cmp">Funil
+        <select id="acFunil"></select></label>
+      <label class="cmp">Etapa (opcional)
+        <select id="acEtapa"><option value="">Qualquer etapa</option></select></label>
+    </div>
+    <label class="cmp">Só quando o título do card contiver (opcional, separado por vírgula)
+      <input id="acPalavras" placeholder="amostra, exportação"></label>
+    <label class="cmp">Participantes que entram automaticamente</label>
+    <div class="lista-check" id="acPessoas"></div>
+    <label class="cmp">Mensagem de abertura (opcional)
+      <input id="acMsg" placeholder="Conversa do card {card}. Dúvidas do pedido, aqui."></label>
+    <label style="display:flex;gap:7px;align-items:center;font-size:12px">
+      <input type="checkbox" id="acIa" style="width:auto"> Já colocar a IA nesta conversa</label>
+    <label style="display:flex;gap:7px;align-items:center;font-size:12px">
+      <input type="checkbox" id="acAtivo" checked style="width:auto"> Regra ativa</label>
+  </div>
+  <div class="modal-pe">
+    <button class="bt" data-fechar>Cancelar</button>
+    <button class="bt pri" id="btSalvarAutoCard">Salvar</button>
+  </div>
+</div></div>
+
 <div class="modal" id="mdAuto"><div class="modal-cx">
   <div class="modal-hd"><h3>Automação</h3></div>
   <div class="modal-bd">
@@ -475,6 +620,7 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
    ================================================================ */
 var sb, EU = null, PESSOAS = [], CONVERSAS = [], ATUAL = null, MSGS = [],
     FILTRO = 'tudo', RESP = null, ANEXO = null, MENCOES = {}, CANAL = null,
+    SOM = true, GRAV = null, FUNIS_ADM = [],
     PARAMS = new URLSearchParams(location.search),
     EMBED = PARAMS.get('modo') === 'embed';
 
@@ -528,6 +674,112 @@ function erroDe(e) {
 }
 
 /* ================================================================
+   Aviso sonoro — dois toques curtos gerados na hora, sem arquivo
+   ================================================================ */
+var _audioCtx = null;
+function tocarAviso() {
+  if (!SOM) return;
+  try {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    _audioCtx = _audioCtx || new AC();
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+    [[880, 0], [1180, 0.11]].forEach(function (t) {
+      var o = _audioCtx.createOscillator(), g = _audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = t[0];
+      var t0 = _audioCtx.currentTime + t[1];
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.16, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.1);
+      o.connect(g); g.connect(_audioCtx.destination);
+      o.start(t0); o.stop(t0 + 0.12);
+    });
+  } catch (x) { /* navegador sem áudio: segue sem avisar */ }
+}
+
+function avisarChegada(m, conversa) {
+  var minha = EU && m.autor_id === EU.user_id;
+  if (minha || m.origem === 'sistema') return;
+  if (conversa && conversa.silenciada) return;
+  tocarAviso();
+  if (document.hidden && window.Notification && Notification.permission === 'granted') {
+    try {
+      var n = new Notification((conversa && conversa.titulo) || 'Chat WGI', {
+        body: (m.autor ? m.autor + ': ' : '') + String(m.corpo || 'nova mensagem').slice(0, 120),
+        tag: m.conversa_id
+      });
+      n.onclick = function () { window.focus(); n.close(); };
+    } catch (x) {}
+  }
+}
+
+function alternarSom() {
+  SOM = !SOM;
+  try { localStorage.setItem('chat_som', SOM ? '1' : '0'); } catch (x) {}
+  $('#btSom').innerHTML = SOM ? '&#128276;' : '&#128277;';
+  $('#btSom').title = SOM ? 'Aviso sonoro ligado' : 'Aviso sonoro desligado';
+  if (SOM) {
+    tocarAviso();
+    if (window.Notification && Notification.permission === 'default') Notification.requestPermission();
+  }
+}
+
+/* ================================================================
+   Gravação de áudio
+   ================================================================ */
+function gravarAudio() {
+  if (GRAV) return pararGravacao(true);
+  if (!navigator.mediaDevices || !window.MediaRecorder)
+    return aviso('Este navegador não grava áudio.', true);
+
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+    var tipo = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg']
+      .filter(function (t) { return MediaRecorder.isTypeSupported(t); })[0] || '';
+    var mr = new MediaRecorder(stream, tipo ? { mimeType: tipo } : undefined);
+    var pedacos = [], t0 = Date.now();
+    mr.ondataavailable = function (e) { if (e.data && e.data.size) pedacos.push(e.data); };
+    mr.onstop = function () {
+      stream.getTracks().forEach(function (t) { t.stop(); });
+      clearInterval(GRAV.tick);
+      $('#gravBanner').hidden = true;
+      $('#btAudio').classList.remove('pri');
+      var cancelado = GRAV.cancelado, seg = GRAV.seg;
+      GRAV = null;
+      if (cancelado || !pedacos.length) return;
+      var blob = new Blob(pedacos, { type: mr.mimeType || 'audio/webm' });
+      var ext = (mr.mimeType || 'audio/webm').indexOf('mp4') >= 0 ? 'm4a' : 'webm';
+      var f = new File([blob], 'audio-' + Date.now() + '.' + ext, { type: blob.type });
+      f.__duracao = seg;
+      ANEXO = f;
+      $('#anxTxt').textContent = '🎙 Mensagem de áudio · ' + relogio(seg);
+      $('#anxBanner').hidden = false;
+    };
+    GRAV = { mr: mr, seg: 0, cancelado: false, tick: setInterval(function () {
+      GRAV.seg = Math.round((Date.now() - t0) / 1000);
+      $('#gravTempo').textContent = relogio(GRAV.seg);
+      if (GRAV.seg >= 300) pararGravacao(false);      // teto de 5 minutos
+    }, 250) };
+    mr.start();
+    $('#gravTempo').textContent = '0:00';
+    $('#gravBanner').hidden = false;
+    $('#btAudio').classList.add('pri');
+  }).catch(function () {
+    aviso('Não consegui usar o microfone. Verifique a permissão do navegador.', true);
+  });
+}
+
+function pararGravacao(cancelar) {
+  if (!GRAV) return;
+  GRAV.cancelado = !!cancelar;
+  try { GRAV.mr.stop(); } catch (x) {}
+}
+
+function relogio(s) {
+  s = Math.max(0, s | 0);
+  return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+}
+
+/* ================================================================
    Corpo da mensagem: links, menções, quebras
    ================================================================ */
 function corpoHtml(txt) {
@@ -559,8 +811,44 @@ function atualizarTitulo() {
     : 'Wendell Global Interlining';
 }
 
+/* ---- trilho lateral: as conversas de quem está logado ---- */
+var CORES_TR = ['var(--wine)', 'var(--s3)', 'var(--s4)', 'var(--s2)', 'var(--s1)', 'var(--pos)'];
+function corDe(id) {
+  var n = 0, s = String(id || '');
+  for (var i = 0; i < s.length; i++) n = (n * 31 + s.charCodeAt(i)) >>> 0;
+  return CORES_TR[n % CORES_TR.length];
+}
+
+function pintarTrilho() {
+  var box = $('#trilho');
+  if (!box) return;
+  var eu = '<div class="tr-eu" title="' + esc((EU && EU.nome) || '') + '">' +
+           iniciais((EU && EU.nome) || '?') + '</div><div class="tr-risco"></div>';
+
+  var vis = CONVERSAS.filter(function (c) { return !c.arquivada; })
+    .sort(function (a, b) {
+      var na = (a.nao_lidas || 0) > 0 ? 1 : 0, nb = (b.nao_lidas || 0) > 0 ? 1 : 0;
+      if (na !== nb) return nb - na;
+      if (a.fixada !== b.fixada) return a.fixada ? -1 : 1;
+      return String(b.ultima_em || '').localeCompare(String(a.ultima_em || ''));
+    }).slice(0, 30);
+
+  box.innerHTML = eu + (vis.length ? vis.map(function (c) {
+    var marca = c.tipo === 'contexto' ? '◧' : iniciais(c.titulo);
+    var selo = c.mencoes ? '<span class="tr-selo at">@</span>'
+             : (c.nao_lidas ? '<span class="tr-selo">' +
+                (c.nao_lidas > 99 ? '99' : c.nao_lidas) + '</span>' : '');
+    return '<div class="tr-item' + (c.nao_lidas ? ' nova' : '') + '" data-tr="' + c.id + '"' +
+      (ATUAL && ATUAL.id === c.id ? ' aria-selected="true"' : '') +
+      ' style="background:' + corDe(c.id) + '" title="' + esc(c.titulo) +
+      (c.nao_lidas ? ' — ' + c.nao_lidas + ' não lida(s)' : '') + '">' +
+      marca + selo + '</div>';
+  }).join('') : '<div class="tr-vazio">sem<br>conversas</div>');
+}
+
 function pintarLista() {
   var termo = ($('#filtroLista').value || '').toLowerCase();
+  pintarTrilho();
   var box = $('#listaConversas'), html = '';
   var vis = CONVERSAS.filter(function (c) {
     if (FILTRO === 'nao' && !c.nao_lidas) return false;
@@ -616,6 +904,8 @@ function abrir(id, semRolar) {
   ['#btMembros', '#btBuscaConv', '#btMais'].forEach(function (s) { $(s).hidden = false; });
   $('#comp').hidden = false;
   pintarLista();
+  atualizarIa();
+  pintarAvatares();
   return rpc('chat_ler', { p_conversa: id, p_limite: 80 }).then(function (d) {
     MSGS = d || [];
     pintarMsgs(!semRolar);
@@ -638,10 +928,16 @@ function pintarMsgs(rolar) {
     if (d !== ultDia) { html += '<div class="dia">' + d + '</div>'; ultDia = d; }
     var meu = EU && m.autor_id === EU.user_id;
     var sis = m.origem === 'sistema';
-    var aut = m.origem === 'automacao' || m.origem === 'integracao';
+    var ia = m.integracao === 'ia';
+    var aut = !ia && (m.origem === 'automacao' || m.origem === 'integracao');
     var cls = 'msg' + (meu ? ' meu' : '') + (sis ? ' sis' : '') + (aut ? ' aut' : '') +
-              (m.apagada ? ' apagada' : '');
+              (ia ? ' ia' : '') + (m.apagada ? ' apagada' : '');
     var anexos = (m.anexos || []).map(function (a) {
+      if (String(a.tipo || '').indexOf('audio') === 0) {
+        return '<div class="audio" data-audio="' + esc(a.caminho) + '">' +
+          '<span class="play">&#9654;</span><span class="onda"></span>' +
+          '<span style="opacity:.75">áudio</span></div>';
+      }
       return '<div class="anexo" data-arq="' + esc(a.caminho) + '" data-nome="' + esc(a.nome) + '">' +
         '<span>📎</span><span style="flex:1">' + esc(a.nome) + '</span>' +
         '<span style="opacity:.7">' + tamanho(a.tamanho) + '</span></div>';
@@ -681,10 +977,86 @@ function anexar(m) {
 }
 
 /* ================================================================
+   Participantes no cabeçalho — discreto, clicável
+   ================================================================ */
+function pintarAvatares() {
+  var box = $('#avMembros');
+  if (!ATUAL) { box.innerHTML = ''; return; }
+  var alvo = ATUAL.id;
+  rpc('chat_membros_lista', { p_conversa: alvo }).then(function (ms) {
+    if (!ATUAL || ATUAL.id !== alvo) return;
+    ms = ms || [];
+    var max = 4, vis = ms.slice(0, max), resto = ms.length - vis.length;
+    var html = vis.map(function (m) {
+      return '<span class="av" title="' + esc(m.nome + ' · ' + m.email) + '">' +
+        iniciais(m.nome) + '</span>';
+    }).join('');
+    if (resto > 0) {
+      html += '<span class="av mais" title="' +
+        esc(ms.slice(max).map(function (m) { return m.nome; }).join(', ')) +
+        '">+' + resto + '</span>';
+    }
+    if (ATUAL.ia_ativa) html += '<span class="av ia" title="IA nesta conversa">IA</span>';
+    box.innerHTML = html;
+  }).catch(function () { box.innerHTML = ''; });
+}
+
+/* ================================================================
+   IA na conversa
+   ================================================================ */
+function iaDisponivel() {
+  return !!(EU && EU.config && EU.config.ia && EU.config.ia.ativa);
+}
+
+function atualizarIa() {
+  $('#btIa').hidden = !iaDisponivel() || !ATUAL;
+  $('#btPerguntarIa').hidden = true;
+  if (!iaDisponivel() || !ATUAL) return;
+  rpc('chat_conversa', { p_conversa: ATUAL.id }).then(function (c) {
+    if (!c || !ATUAL || c.id !== ATUAL.id) return;
+    ATUAL.ia_ativa = !!c.ia_ativa;
+    $('#btIa').setAttribute('aria-pressed', ATUAL.ia_ativa ? 'true' : 'false');
+    $('#btIa').title = ATUAL.ia_ativa ? 'A IA está nesta conversa — clique para tirar'
+                                      : 'Colocar a IA nesta conversa';
+    $('#btPerguntarIa').hidden = !ATUAL.ia_ativa;
+  }).catch(function () {});
+}
+
+function alternarIa() {
+  if (!ATUAL) return;
+  rpc('chat_ia_ligar', { p_conversa: ATUAL.id, p_valor: !ATUAL.ia_ativa })
+    .then(function () { return abrir(ATUAL.id, true); })
+    .then(atualizarIa)
+    .catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function perguntarIa() {
+  if (!ATUAL || !ATUAL.ia_ativa) return;
+  var txt = $('#entrada').value.trim();
+  if (!txt) return aviso('Escreva a pergunta antes de chamar a IA.', true);
+  $('#btPerguntarIa').disabled = true;
+  rpc('chat_enviar', { p_conversa: ATUAL.id, p_corpo: txt,
+                       p_responde_a: RESP ? RESP.id : null, p_anexos: [], p_mencoes: [] })
+    .then(function () { return rpc('chat_ia_solicitar', { p_conversa: ATUAL.id, p_prompt: txt }); })
+    .then(function () {
+      $('#entrada').value = ''; $('#entrada').style.height = 'auto'; limparResposta();
+      aviso('Pergunta na fila da IA. A resposta entra na conversa quando o serviço devolver.');
+      return abrir(ATUAL.id, true);
+    })
+    .catch(function (e) { aviso(erroDe(e), true); })
+    .then(function () { $('#btPerguntarIa').disabled = false; });
+}
+
+/* ================================================================
    Envio
    ================================================================ */
 function enviar() {
   var txt = $('#entrada').value.trim();
+  if (/^\/ia\b/i.test(txt)) {
+    if (!ATUAL || !ATUAL.ia_ativa) return aviso('A IA não está nesta conversa.', true);
+    $('#entrada').value = txt.replace(/^\/ia\s*/i, '');
+    return perguntarIa();
+  }
   if (!ATUAL || (!txt && !ANEXO)) return;
   $('#btEnviar').disabled = true;
   var emails = Object.keys(MENCOES).filter(function (e) { return txt.indexOf(MENCOES[e]) >= 0; });
@@ -765,6 +1137,9 @@ function ligarRealtime() {
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_mensagens' },
       function (p) {
         var m = p['new'];
+        var conv = CONVERSAS.filter(function (c) { return c.id === m.conversa_id; })[0];
+        avisarChegada({ autor_id: m.autor_id, autor: m.autor_nome, corpo: m.corpo,
+                        origem: m.origem, conversa_id: m.conversa_id }, conv);
         if (ATUAL && m.conversa_id === ATUAL.id) {
           anexar({
             id: m.id, autor_id: m.autor_id, autor: m.autor_nome, email: m.autor_email,
@@ -772,6 +1147,10 @@ function ligarRealtime() {
             editada: !!m.editada_em, criado_em: m.criado_em, responde_a: m.responde_a,
             anexos: [], metadados: m.metadados
           });
+          // a mensagem chega antes dos anexos: relê para trazer o áudio/arquivo
+          if (m.metadados && m.metadados.anexos) {
+            setTimeout(function () { if (ATUAL && ATUAL.id === m.conversa_id) abrir(ATUAL.id, true); }, 900);
+          }
         }
         carregarLista();
       })
@@ -966,8 +1345,37 @@ function admWebhooks() {
   }).catch(function (e) { aviso(erroDe(e), true); });
 }
 
+function nomeFunil(id) {
+  var f = FUNIS_ADM.filter(function (x) { return x.id === id; })[0];
+  return f ? f.nome : 'funil';
+}
+function nomeEtapaAdm(fid, eid) {
+  var f = FUNIS_ADM.filter(function (x) { return x.id === fid; })[0];
+  var e = f && (f.etapas || []).filter(function (x) { return x.id === eid; })[0];
+  return e ? e.nome : 'etapa';
+}
+function descreverCond(a) {
+  var c = a.condicoes || {}, p = [];
+  if (c.funil_id) p.push('funil ' + nomeFunil(c.funil_id));
+  if (c.etapa_id) p.push('etapa ' + nomeEtapaAdm(c.funil_id, c.etapa_id));
+  if (c.conversa_tipo) p.push('conversa ' + c.conversa_tipo);
+  if (c.contexto_tipo && !c.funil_id) p.push('contexto ' + c.contexto_tipo);
+  if (c.palavras) p.push('contendo "' + c.palavras.join('", "') + '"');
+  return p.length ? p.join(' · ') : 'qualquer caso';
+}
+function descreverAcoes(acoes) {
+  return (acoes || []).map(function (x) {
+    if (x.tipo === 'adicionar_membros') return 'inclui ' + (x.emails || []).length + ' pessoa(s)';
+    if (x.tipo === 'adicionar_membro') return 'inclui ' + (x.email || '');
+    if (x.tipo === 'postar_mensagem') return 'posta mensagem';
+    if (x.tipo === 'ativar_ia') return 'liga a IA';
+    if (x.tipo === 'webhook') return 'dispara webhook';
+    return x.tipo;
+  }).join(' · ') || '—';
+}
+
 function admAutomacoes() {
-  rpc('chat_adm_automacoes').then(function (as) {
+  admCarregarFunis().then(function () { return rpc('chat_adm_automacoes'); }).then(function (as) {
     $('#tbAutomacoes').innerHTML =
       '<thead><tr><th>Nome</th><th>Gatilho</th><th>Condições</th><th>Ações</th>' +
       '<th class="num">Execuções</th><th>Status</th><th></th></tr></thead><tbody>' +
@@ -975,9 +1383,10 @@ function admAutomacoes() {
         return '<tr><td><strong>' + esc(a.nome) + '</strong>' +
           (a.descricao ? '<br><span style="color:var(--ink-3);font-size:10.5px">' +
             esc(a.descricao) + '</span>' : '') + '</td>' +
-          '<td><span class="tag">' + esc(a.gatilho) + '</span></td>' +
-          '<td style="font-size:10.5px">' + esc(JSON.stringify(a.condicoes)) + '</td>' +
-          '<td style="font-size:10.5px">' + esc(JSON.stringify(a.acoes)) + '</td>' +
+          '<td><span class="tag' + (a.gatilho === 'card_criado' ? ' w' : '') + '">' +
+            (a.gatilho === 'card_criado' ? 'ao criar card' : esc(a.gatilho)) + '</span></td>' +
+          '<td style="font-size:10.5px">' + esc(descreverCond(a)) + '</td>' +
+          '<td style="font-size:10.5px">' + esc(descreverAcoes(a.acoes)) + '</td>' +
           '<td class="num">' + a.execucoes + '</td>' +
           '<td>' + (a.ativo ? '<span class="tag ok">ativa</span>'
                             : '<span class="tag">parada</span>') + '</td>' +
@@ -1011,6 +1420,102 @@ function admEventos() {
     }).catch(function (e) { aviso(erroDe(e), true); });
 }
 
+/* ---- automação "ao criar card": editor guiado, sem JSON à mão ---- */
+function admCarregarFunis() {
+  if (FUNIS_ADM.length) return Promise.resolve(FUNIS_ADM);
+  return rpc('chat_adm_funis').then(function (fs) { FUNIS_ADM = fs || []; return FUNIS_ADM; })
+    .catch(function () { return []; });
+}
+
+function acPreencherFunis(sel) {
+  $('#acFunil').innerHTML = '<option value="">Qualquer funil</option>' +
+    FUNIS_ADM.map(function (f) {
+      return '<option value="' + esc(f.id) + '"' + (sel === f.id ? ' selected' : '') + '>' +
+        esc(f.nome) + '</option>';
+    }).join('');
+}
+
+function acPreencherEtapas(sel) {
+  var f = FUNIS_ADM.filter(function (x) { return x.id === $('#acFunil').value; })[0];
+  $('#acEtapa').innerHTML = '<option value="">Qualquer etapa</option>' +
+    ((f && f.etapas) || []).map(function (e) {
+      return '<option value="' + esc(e.id) + '"' + (sel === e.id ? ' selected' : '') + '>' +
+        esc(e.nome) + '</option>';
+    }).join('');
+}
+
+function acPreencherPessoas(marcados) {
+  marcados = marcados || [];
+  rpc('chat_adm_usuarios').then(function (us) {
+    $('#acPessoas').innerHTML = (us || []).filter(function (u) { return u.ativo; })
+      .map(function (u) {
+        return '<label><input type="checkbox" value="' + esc(u.email) + '"' +
+          (marcados.indexOf(u.email) >= 0 ? ' checked' : '') + '><span>' + esc(u.nome) +
+          '</span><span style="margin-left:auto;color:var(--ink-3);font-size:11px">' +
+          esc(u.email) + '</span></label>';
+      }).join('') || '<div class="vazio">Nenhum usuário ativo.</div>';
+  });
+}
+
+function abrirAutoCard(a) {
+  admCarregarFunis().then(function () {
+    var c = (a && a.condicoes) || {}, acoes = (a && a.acoes) || [];
+    var emails = [];
+    acoes.forEach(function (x) {
+      if (x.tipo === 'adicionar_membros') emails = emails.concat(x.emails || []);
+      if (x.tipo === 'adicionar_membro' && x.email) emails.push(x.email);
+    });
+    var msg = (acoes.filter(function (x) { return x.tipo === 'postar_mensagem'; })[0] || {}).texto || '';
+    $('#acId').value = (a && a.id) || '';
+    $('#acNome').value = (a && a.nome) || '';
+    $('#acPalavras').value = (c.palavras || []).join(', ');
+    $('#acMsg').value = msg;
+    $('#acIa').checked = acoes.some(function (x) { return x.tipo === 'ativar_ia'; });
+    $('#acAtivo').checked = a ? !!a.ativo : true;
+    acPreencherFunis(c.funil_id || '');
+    acPreencherEtapas(c.etapa_id || '');
+    acPreencherPessoas(emails);
+    abrirModal('#mdAutoCard');
+  });
+}
+
+function salvarAutoCard() {
+  var emails = $$('#acPessoas input:checked').map(function (i) { return i.value; });
+  var acoes = [];
+  if (emails.length) acoes.push({ tipo: 'adicionar_membros', emails: emails });
+  if ($('#acMsg').value.trim()) acoes.push({ tipo: 'postar_mensagem', texto: $('#acMsg').value.trim() });
+  if ($('#acIa').checked) acoes.push({ tipo: 'ativar_ia' });
+  if (!acoes.length) return aviso('Escolha ao menos uma pessoa, uma mensagem ou a IA.', true);
+
+  var cond = { contexto_tipo: 'funil_card' };
+  if ($('#acFunil').value) cond.funil_id = $('#acFunil').value;
+  if ($('#acEtapa').value) cond.etapa_id = $('#acEtapa').value;
+  var pal = $('#acPalavras').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  if (pal.length) cond.palavras = pal;
+
+  rpc('chat_adm_salvar_automacao', { p: {
+    id: $('#acId').value || null,
+    nome: $('#acNome').value.trim() || 'Automação de card',
+    descricao: 'Ao criar card no funil', gatilho: 'card_criado',
+    condicoes: cond, acoes: acoes, ativo: $('#acAtivo').checked
+  } }).then(function () {
+    fecharModal($('#mdAutoCard')); admAutomacoes(); aviso('Automação de card salva.');
+  }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+/* ---- aba IA ---- */
+function admIa() {
+  var ia = ((EU && EU.config && EU.config.ia) || {});
+  $('#iaNome').value = ia.nome || 'Assistente WGI';
+  $('#iaAtiva').value = ia.ativa ? '1' : '0';
+  $('#iaAuto').value = ia.auto ? '1' : '0';
+  rpc('chat_adm_conversas', { p_busca: null }).then(function (cs) {
+    $('#iaTesteConv').innerHTML = (cs || []).slice(0, 60).map(function (c) {
+      return '<option value="' + c.id + '">' + esc(c.titulo || c.tipo) + '</option>';
+    }).join('');
+  }).catch(function () {});
+}
+
 function admConfig() {
   var c = (EU && EU.config) || {};
   $('#cfgNome').value = c.nome || 'Chat WGI';
@@ -1036,7 +1541,30 @@ function ligarEventos() {
     var c = e.target.closest('.conv'); if (c) abrir(c.dataset.id);
   });
 
+  $('#trilho').addEventListener('click', function (e) {
+    var t = e.target.closest('[data-tr]');
+    if (t) return abrir(t.dataset.tr);
+    if (e.target.closest('.tr-eu')) {                 // avatar de quem está logado
+      FILTRO = 'nao';
+      $$('#filtros button').forEach(function (x) {
+        x.setAttribute('aria-pressed', x.dataset.f === 'nao' ? 'true' : 'false');
+      });
+      document.body.classList.add('ver-lista');
+      pintarLista();
+    }
+  });
+
   $('#msgs').addEventListener('click', function (e) {
+    var aud = e.target.closest('[data-audio]');
+    if (aud && !aud.querySelector('audio')) {
+      sb.storage.from('chat-anexos').createSignedUrl(aud.dataset.audio, 600).then(function (r) {
+        if (r.error) return aviso('Não consegui abrir o áudio.', true);
+        aud.innerHTML = '<audio controls autoplay preload="metadata" src="' +
+                        esc(r.data.signedUrl) + '"></audio>';
+      });
+      return;
+    }
+    if (aud) return;
     var anx = e.target.closest('.anexo');
     if (anx) {
       sb.storage.from('chat-anexos').createSignedUrl(anx.dataset.arq, 120).then(function (r) {
@@ -1100,6 +1628,14 @@ function ligarEventos() {
     $('#anxBanner').hidden = false;
   });
 
+  $('#btAudio').addEventListener('click', gravarAudio);
+  $('#gravParar').addEventListener('click', function () { pararGravacao(false); });
+  $('#gravCancel').addEventListener('click', function () { pararGravacao(true); });
+  $('#btSom').addEventListener('click', alternarSom);
+  $('#btIa').addEventListener('click', alternarIa);
+  $('#btPerguntarIa').addEventListener('click', perguntarIa);
+  $('#avMembros').addEventListener('click', function () { if (ATUAL) verMembros(); });
+
   $('#btNova').addEventListener('click', function () {
     pintarPessoas(); abrirModal('#mdNova');
   });
@@ -1119,12 +1655,14 @@ function ligarEventos() {
     var b = e.target.closest('[data-sai]'); if (!b) return;
     if (!confirm('Remover esta pessoa da conversa?')) return;
     rpc('chat_remover_membro', { p_conversa: ATUAL.id, p_user: b.dataset.sai })
-      .then(verMembros).then(carregarLista).catch(function (er) { aviso(erroDe(er), true); });
+      .then(verMembros).then(carregarLista).then(pintarAvatares)
+      .catch(function (er) { aviso(erroDe(er), true); });
   });
   $('#btAddMembro').addEventListener('click', function () {
     var em = $('#selAddMembro').value; if (!em) return;
     rpc('chat_add_membro', { p_conversa: ATUAL.id, p_email: em })
-      .then(verMembros).then(carregarLista).then(function () { aviso('Participante adicionado.'); })
+      .then(verMembros).then(carregarLista).then(pintarAvatares)
+      .then(function () { aviso('Participante adicionado.'); })
       .catch(function (er) { aviso(erroDe(er), true); });
   });
 
@@ -1183,8 +1721,28 @@ function ligarEventos() {
     $$('.aba').forEach(function (a) { a.classList.remove('on'); });
     $('#aba-' + b.dataset.a).classList.add('on');
     ({ usuarios: admUsuarios, conversas: admConversas, webhooks: admWebhooks,
-       automacoes: admAutomacoes, eventos: admEventos, config: admConfig }[b.dataset.a] ||
-     function () {})();
+       automacoes: admAutomacoes, eventos: admEventos, config: admConfig,
+       ia: admIa }[b.dataset.a] || function () {})();
+  });
+
+  $('#btNovaAutoCard').addEventListener('click', function () { abrirAutoCard(null); });
+  $('#acFunil').addEventListener('change', function () { acPreencherEtapas(''); });
+  $('#btSalvarAutoCard').addEventListener('click', salvarAutoCard);
+
+  $('#btSalvarIa').addEventListener('click', function () {
+    var cfg = Object.assign({}, (EU && EU.config) || {});
+    cfg.ia = { ativa: $('#iaAtiva').value === '1', nome: $('#iaNome').value.trim() || 'Assistente WGI',
+               auto: $('#iaAuto').value === '1' };
+    rpc('chat_adm_salvar_config', { p: cfg }).then(function () {
+      EU.config = cfg; aviso('Configuração da IA salva.'); atualizarIa();
+    }).catch(function (e) { aviso(erroDe(e), true); });
+  });
+  $('#btTesteIa').addEventListener('click', function () {
+    var c = $('#iaTesteConv').value, t = $('#iaTesteTxt').value.trim();
+    if (!c || !t) return aviso('Escolha a conversa e escreva o texto.', true);
+    rpc('chat_ia_responder', { p_conversa: c, p_texto: t }).then(function () {
+      $('#iaTesteTxt').value = ''; aviso('Resposta publicada como IA.');
+    }).catch(function (e) { aviso(erroDe(e), true); });
   });
   $('#tbUsuarios').addEventListener('click', function (e) {
     var s = e.target.closest('[data-salvar]'); if (s) return admSalvarUsuario(s.dataset.salvar);
@@ -1252,6 +1810,9 @@ function ligarEventos() {
   });
   $('#tbAutomacoes').addEventListener('click', function (e) {
     var ed = e.target.closest('[data-ed-au]');
+    if (ed && JSON.parse(ed.getAttribute('data-ed-au')).gatilho === 'card_criado') {
+      return abrirAutoCard(JSON.parse(ed.getAttribute('data-ed-au')));
+    }
     if (ed) {
       var a = JSON.parse(ed.getAttribute('data-ed-au')), c = a.condicoes || {};
       $('#auId').value = a.id; $('#auNome').value = a.nome || '';
@@ -1338,7 +1899,24 @@ function iniciar() {
     }
     $('#tituloApp').textContent = (EU.config && EU.config.nome) || 'Chat';
     $('#btAdm').hidden = !EU.admin;
-    if (!EU.pode_anexar) $('#btAnexo').style.display = 'none';
+    if (!EU.pode_anexar) {
+      $('#btAnexo').style.display = 'none';
+      $('#btAudio').style.display = 'none';
+    }
+    // som: padrão da organização, com a escolha de cada um por cima
+    SOM = (EU.config && EU.config.som) !== false;
+    try {
+      var s = localStorage.getItem('chat_som');
+      if (s !== null) SOM = s === '1';
+    } catch (x) {}
+    $('#btSom').innerHTML = SOM ? '&#128276;' : '&#128277;';
+    $('#btSom').title = SOM ? 'Aviso sonoro ligado' : 'Aviso sonoro desligado';
+    if (SOM && window.Notification && Notification.permission === 'default') {
+      document.addEventListener('click', function pedir() {
+        document.removeEventListener('click', pedir);
+        try { Notification.requestPermission(); } catch (x) {}
+      }, { once: true });
+    }
     return rpc('chat_pessoas');
   }).then(function (ps) {
     PESSOAS = ps || [];
