@@ -54,6 +54,13 @@ body.embed .pane{border:0;border-radius:0;box-shadow:none}
 .pane-hd .sub{font-size:11px;color:var(--ink-3)}
 .rolar{overflow-y:auto;overscroll-behavior:contain;flex:1;min-height:0}
 
+/* -------- iconografia: traço fino, uma cor só, herdada do contexto -------- */
+.i{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto;vertical-align:-3px}
+.i.g{width:17px;height:17px}
+.i.p{width:13px;height:13px}
+.i .cheio{fill:currentColor;stroke:none}
+
 button{font-family:"Archivo",Arial,sans-serif}
 .bt{font:600 11.5px Archivo,sans-serif;border:1px solid var(--line);border-radius:8px;
   background:var(--card);color:var(--ink-2);padding:5px 10px;cursor:pointer;white-space:nowrap}
@@ -139,11 +146,30 @@ label.cmp>input,label.cmp>select,label.cmp>textarea{font-weight:400;letter-spaci
 .cita{border-left:3px solid var(--wine-soft);padding:2px 0 2px 7px;margin-bottom:4px;
   font-size:11px;opacity:.85}
 .msg.meu .cita{border-left-color:rgba(255,255,255,.6)}
-.acoes{display:flex;gap:4px;opacity:0;transition:opacity .12s}
+.acoes{display:flex;gap:2px;opacity:0;transition:opacity .12s}
 .msg:hover .acoes,.msg:focus-within .acoes{opacity:1}
-.acoes button{border:0;background:none;color:var(--ink-3);cursor:pointer;font-size:9.5px;
-  font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:1px 3px}
-.acoes button:hover{color:var(--wine)}
+.acoes button{border:0;background:none;color:var(--ink-3);cursor:pointer;padding:2px 3px;
+  display:grid;place-items:center;border-radius:5px;line-height:0}
+.acoes button:hover{color:var(--wine);background:var(--chip)}
+
+/* -------- reações -------- */
+.reacoes{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;padding:0 2px}
+.msg.meu .reacoes{justify-content:flex-end}
+.reacao{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink-2);border-radius:20px;padding:2px 8px 2px 6px;
+  font:600 10.5px Archivo,sans-serif;cursor:pointer;line-height:1.4}
+.reacao:hover{border-color:var(--wine-soft);color:var(--wine)}
+.reacao.eu{border-color:var(--wine);color:var(--wine);background:var(--chip)}
+.paleta{position:fixed;z-index:300;display:flex;gap:2px;padding:5px;background:var(--card);
+  border:1px solid var(--line);border-radius:22px;box-shadow:0 8px 26px rgba(38,37,42,.2)}
+.paleta button{border:0;background:none;color:var(--ink-2);cursor:pointer;width:28px;height:28px;
+  border-radius:50%;display:grid;place-items:center;line-height:0}
+.paleta button:hover{background:var(--chip);color:var(--wine)}
+.msg.alvo .bolha{animation:destaca 1.6s ease-out}
+@keyframes destaca{0%,40%{box-shadow:0 0 0 3px var(--s2)}100%{box-shadow:var(--shadow)}}
+.enc-marca{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--ink-3);
+  margin-bottom:3px;font-style:italic}
+.msg.meu .enc-marca{color:rgba(255,255,255,.8)}
 .anexo{display:flex;align-items:center;gap:6px;margin-top:5px;padding:5px 8px;
   border:1px solid var(--line);border-radius:8px;background:var(--sunk);font-size:11.5px;
   cursor:pointer;color:var(--ink)}
@@ -274,8 +300,8 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
     <button class="header-chip" id="btNova">Nova conversa</button>
     <button class="header-chip" id="btAdm" hidden>Administração</button>
     <button class="header-chip" id="btVoltarChat" hidden>Voltar ao chat</button>
-    <button class="header-chip" id="btSom" title="Aviso sonoro de mensagem nova">&#128276;</button>
-    <button class="header-chip" id="btTema" title="Claro / escuro">◐</button>
+    <button class="header-chip" id="btSom" title="Aviso sonoro de mensagem nova"></button>
+    <button class="header-chip" id="btTema" title="Claro / escuro"></button>
   </div>
 </header>
 
@@ -303,7 +329,7 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
   <!-- conversa aberta -->
   <section class="pane conversa">
     <div class="thread-hd" id="threadHd">
-      <button class="bt ic" id="btVoltarLista" style="display:none">‹</button>
+      <button class="bt ic" id="btVoltarLista" style="display:none"></button>
       <div style="min-width:0;flex:1">
         <div class="tit" id="convTitulo">Selecione uma conversa</div>
         <div class="ctx" id="convCtx"></div>
@@ -313,7 +339,7 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
               title="Colocar a IA nesta conversa">IA</button>
       <button class="bt min" id="btMembros" hidden>Participantes</button>
       <button class="bt min" id="btBuscaConv" hidden>Buscar</button>
-      <button class="bt min" id="btMais" hidden>⋯</button>
+      <button class="bt min" id="btMais" hidden></button>
     </div>
     <div class="rolar msgs" id="msgs">
       <div class="vazio">Escolha uma conversa à esquerda, ou crie uma nova.</div>
@@ -321,11 +347,11 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
     <div class="comp" id="comp" hidden>
       <div class="resp-banner" id="respBanner" hidden>
         <span style="flex:1" id="respTxt"></span>
-        <button class="bt min" id="respCancel">✕</button>
+        <button class="bt min" id="respCancel"></button>
       </div>
       <div class="anx-banner" id="anxBanner" hidden>
         <span style="flex:1" id="anxTxt"></span>
-        <button class="bt min" id="anxCancel">✕</button>
+        <button class="bt min" id="anxCancel"></button>
       </div>
       <div class="gravando" id="gravBanner" hidden>
         <span class="bolinha"></span>
@@ -335,12 +361,12 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
       </div>
       <div class="caixa" style="position:relative">
         <div class="sugest" id="sugest" hidden></div>
-        <button class="bt ic" id="btAnexo" title="Anexar arquivo">📎</button>
-        <button class="bt ic" id="btAudio" title="Gravar mensagem de áudio">&#127908;</button>
+        <button class="bt ic" id="btAnexo" title="Anexar arquivo"></button>
+        <button class="bt ic" id="btAudio" title="Gravar mensagem de áudio"></button>
         <input type="file" id="arquivo" hidden>
         <textarea id="entrada" rows="1" placeholder="Escreva uma mensagem…  (@ menciona alguém, Enter envia)"></textarea>
         <button class="bt ia" id="btPerguntarIa" hidden
-                title="Mandar o que está escrito para a IA">&#10024; IA</button>
+                title="Mandar o que está escrito para a IA"></button>
         <button class="bt pri" id="btEnviar">Enviar</button>
       </div>
     </div>
@@ -507,6 +533,46 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
   <div class="modal-pe"><button class="bt" data-fechar>Fechar</button></div>
 </div></div>
 
+<div class="modal" id="mdEnc"><div class="modal-cx">
+  <div class="modal-hd"><h3>Encaminhar mensagem</h3></div>
+  <div class="modal-bd">
+    <div id="encPreview" class="cita" style="border-left:3px solid var(--wine-soft);
+         background:var(--chip);padding:8px 10px;border-radius:0 8px 8px 0"></div>
+    <label class="cmp">Comentário (opcional)<input id="encObs" placeholder="Segue para ciência…"></label>
+    <label class="cmp">Conversas</label>
+    <div class="lista-check" id="encConversas"></div>
+    <label class="cmp">Ou direto para uma pessoa</label>
+    <div class="lista-check" id="encPessoas"></div>
+  </div>
+  <div class="modal-pe">
+    <button class="bt" data-fechar>Cancelar</button>
+    <button class="bt pri" id="btEncaminhar">Encaminhar</button>
+  </div>
+</div></div>
+
+<div class="modal" id="mdComp"><div class="modal-cx">
+  <div class="modal-hd"><h3>Compartilhar com outra ferramenta</h3></div>
+  <div class="modal-bd">
+    <div id="compPreview" class="cita" style="border-left:3px solid var(--wine-soft);
+         background:var(--chip);padding:8px 10px;border-radius:0 8px 8px 0"></div>
+    <label class="cmp">Destino
+      <select id="compDestino"></select></label>
+    <label class="cmp">Observação que vai junto (opcional)
+      <input id="compObs" placeholder="Anexar ao card do Trello…"></label>
+    <p class="dica">O envio entra na fila de eventos como
+      <code>mensagem.compartilhada</code>; o webhook cadastrado no ADM leva adiante.
+      O link direto abre a mensagem dentro do chat, para quem já tem acesso.</p>
+    <div class="linha">
+      <input id="compLink" readonly style="flex:1">
+      <button class="bt" id="btCopiarLink">Copiar link</button>
+    </div>
+  </div>
+  <div class="modal-pe">
+    <button class="bt" data-fechar>Fechar</button>
+    <button class="bt pri" id="btCompartilhar">Enviar para a fila</button>
+  </div>
+</div></div>
+
 <div class="modal" id="mdBusca"><div class="modal-cx">
   <div class="modal-hd"><h3>Buscar mensagens</h3></div>
   <div class="modal-bd">
@@ -624,6 +690,50 @@ var sb, EU = null, PESSOAS = [], CONVERSAS = [], ATUAL = null, MSGS = [],
     PARAMS = new URLSearchParams(location.search),
     EMBED = PARAMS.get('modo') === 'embed';
 
+/* ================================================================
+   Iconografia WGI — traço de 1,6 px, sem preenchimento, cor herdada
+   (branco sobre o vinho, vinho sobre o branco). Nenhum emoji.
+   ================================================================ */
+var ICONES = {
+  clipe: '<path d="M20.4 11.1 12 19.5a5.2 5.2 0 0 1-7.4-7.4l8.5-8.5a3.5 3.5 0 0 1 4.9 4.9l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4l7.8-7.8"/>',
+  microfone: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M8.5 21h7"/>',
+  sino: '<path d="M18 9a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16S18 14 18 9"/><path d="M10.3 19.5a2 2 0 0 0 3.4 0"/>',
+  sinoOff: '<path d="M18 9a6 6 0 0 0-9.3-5M6.2 7.6A6 6 0 0 0 6 9c0 5-2 6.5-2 6.5h12"/><path d="M10.3 19.5a2 2 0 0 0 3.4 0M3.5 3.5l17 17"/>',
+  faisca: '<path d="M11 3.5 12.6 8 17 9.6 12.6 11.2 11 15.7 9.4 11.2 5 9.6 9.4 8z"/><path d="M18 15.2l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
+  lupa: '<circle cx="11" cy="11" r="6.5"/><path d="M15.8 15.8 20.5 20.5"/>',
+  reticencias: '<circle class="cheio" cx="5.5" cy="12" r="1.5"/><circle class="cheio" cx="12" cy="12" r="1.5"/><circle class="cheio" cx="18.5" cy="12" r="1.5"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  chevronEsq: '<path d="M15 4.5 7.5 12 15 19.5"/>',
+  play: '<path class="cheio" d="M8 5.2 18.5 12 8 18.8z"/>',
+  quadro: '<rect x="3.5" y="5" width="17" height="14" rx="2.2"/><path d="M8.2 5v14"/>',
+  encaminhar: '<path d="M14 5.5 20 11l-6 5.5"/><path d="M20 11H9.5A5.5 5.5 0 0 0 4 16.5V19"/>',
+  responder: '<path d="M10 5.5 4 11l6 5.5"/><path d="M4 11h10.5A5.5 5.5 0 0 1 20 16.5V19"/>',
+  compartilhar: '<circle cx="18" cy="6" r="2.4"/><circle cx="6" cy="12" r="2.4"/><circle cx="18" cy="18" r="2.4"/><path d="M8.2 10.8 15.8 7.2M8.2 13.2l7.6 3.6"/>',
+  reagir: '<circle cx="12" cy="12" r="8.2"/><path d="M12 8.4v7.2M8.4 12h7.2"/>',
+  lapis: '<path d="M4 20l4.2-1.1L19 8.1a2.2 2.2 0 0 0-3.1-3.1L5.1 15.8z"/><path d="M14.8 6.1l3.1 3.1"/>',
+  lixeira: '<path d="M4.5 7h15M9.5 7V4.8h5V7M6.8 7l.9 12.2h8.6L17.2 7"/>',
+  tema: '<circle cx="12" cy="12" r="8.2"/><path class="cheio" d="M12 3.8a8.2 8.2 0 0 1 0 16.4z"/>',
+  documento: '<path d="M13.5 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5z"/><path d="M13.5 3v5.5H19"/>',
+  balao: '<path d="M20 11.5a7 7 0 0 1-7 7H8.6L4.5 21.5V17A7 7 0 0 1 8.5 4.5h4.5a7 7 0 0 1 7 7z"/>',
+  pessoa: '<circle cx="12" cy="8" r="3.4"/><path d="M5.2 20a6.8 6.8 0 0 1 13.6 0"/>',
+  link: '<path d="M10.2 13.4a4.2 4.2 0 0 0 6 0l2.5-2.5a4.2 4.2 0 0 0-6-6L11.5 6"/><path d="M13.8 10.6a4.2 4.2 0 0 0-6 0l-2.5 2.5a4.2 4.2 0 0 0 6 6L12.5 18"/>',
+  /* reações — as mesmas figuras finas, nada de emoji colorido */
+  ok: '<path d="M4.8 12.6 9.6 17.4 19.2 6.6"/>',
+  atencao: '<path d="M12 4 20.8 19.5H3.2z"/><path d="M12 10v4M12 16.8h.01"/>',
+  duvida: '<circle cx="12" cy="12" r="8.2"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.1 2.8c-.6.2-.8.7-.8 1.3v.5M12 16.8h.01"/>',
+  prazo: '<circle cx="12" cy="12" r="8.2"/><path d="M12 7.2V12l3 2"/>',
+  visto: '<path d="M2.8 12S6.4 5.8 12 5.8 21.2 12 21.2 12 17.6 18.2 12 18.2 2.8 12 2.8 12z"/><circle cx="12" cy="12" r="2.7"/>',
+  nao: '<circle cx="12" cy="12" r="8.2"/><path d="M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6"/>'
+};
+function ico(nome, cls) {
+  return '<svg class="i ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true">' +
+         (ICONES[nome] || '') + '</svg>';
+}
+var REACOES = [
+  ['ok', 'De acordo'], ['visto', 'Vi'], ['atencao', 'Atenção'],
+  ['duvida', 'Dúvida'], ['prazo', 'Aguardando'], ['nao', 'Não']
+];
+
 var $ = function (s) { return document.querySelector(s); };
 var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
 
@@ -631,6 +741,18 @@ function esc(t) {
   return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
+}
+function bt(acao, icone, titulo) {
+  return '<button data-ac="' + acao + '" title="' + esc(titulo) + '">' + ico(icone, 'p') + '</button>';
+}
+function pintarIcones() {
+  var mapa = { btTema: 'tema', btVoltarLista: 'chevronEsq', btMais: 'reticencias',
+               respCancel: 'x', anxCancel: 'x', btAnexo: 'clipe', btAudio: 'microfone' };
+  Object.keys(mapa).forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = ico(mapa[id]);
+  });
+  $('#btPerguntarIa').innerHTML = ico('faisca') + ' IA';
 }
 function aviso(txt, erro) {
   var a = $('#aviso');
@@ -716,7 +838,7 @@ function avisarChegada(m, conversa) {
 function alternarSom() {
   SOM = !SOM;
   try { localStorage.setItem('chat_som', SOM ? '1' : '0'); } catch (x) {}
-  $('#btSom').innerHTML = SOM ? '&#128276;' : '&#128277;';
+  $('#btSom').innerHTML = ico(SOM ? 'sino' : 'sinoOff');
   $('#btSom').title = SOM ? 'Aviso sonoro ligado' : 'Aviso sonoro desligado';
   if (SOM) {
     tocarAviso();
@@ -751,7 +873,7 @@ function gravarAudio() {
       var f = new File([blob], 'audio-' + Date.now() + '.' + ext, { type: blob.type });
       f.__duracao = seg;
       ANEXO = f;
-      $('#anxTxt').textContent = '🎙 Mensagem de áudio · ' + relogio(seg);
+      $('#anxTxt').innerHTML = ico('microfone') + ' Mensagem de áudio · ' + relogio(seg);
       $('#anxBanner').hidden = false;
     };
     GRAV = { mr: mr, seg: 0, cancelado: false, tick: setInterval(function () {
@@ -834,7 +956,7 @@ function pintarTrilho() {
     }).slice(0, 30);
 
   box.innerHTML = eu + (vis.length ? vis.map(function (c) {
-    var marca = c.tipo === 'contexto' ? '◧' : iniciais(c.titulo);
+    var marca = c.tipo === 'contexto' ? ico('quadro', 'g') : iniciais(c.titulo);
     var selo = c.mencoes ? '<span class="tr-selo at">@</span>'
              : (c.nao_lidas ? '<span class="tr-selo">' +
                 (c.nao_lidas > 99 ? '99' : c.nao_lidas) + '</span>' : '');
@@ -871,7 +993,7 @@ function pintarLista() {
     html += '<div class="conv" data-id="' + c.id + '"' +
       (ATUAL && ATUAL.id === c.id ? ' aria-selected="true"' : '') + '>' +
       '<div class="av ' + cls + '">' +
-        (c.tipo === 'contexto' ? '◧' : iniciais(c.titulo)) + '</div>' +
+        (c.tipo === 'contexto' ? ico('quadro') : iniciais(c.titulo)) + '</div>' +
       '<div class="conv-txt">' +
         '<div class="conv-top"><span class="conv-nome">' + esc(c.titulo) + '</span>' +
         '<span class="conv-hora">' + hora(c.ultima_em) + '</span></div>' +
@@ -935,15 +1057,25 @@ function pintarMsgs(rolar) {
     var anexos = (m.anexos || []).map(function (a) {
       if (String(a.tipo || '').indexOf('audio') === 0) {
         return '<div class="audio" data-audio="' + esc(a.caminho) + '">' +
-          '<span class="play">&#9654;</span><span class="onda"></span>' +
+          '<span class="play">' + ico('play', 'p') + '</span><span class="onda"></span>' +
           '<span style="opacity:.75">áudio</span></div>';
       }
       return '<div class="anexo" data-arq="' + esc(a.caminho) + '" data-nome="' + esc(a.nome) + '">' +
-        '<span>📎</span><span style="flex:1">' + esc(a.nome) + '</span>' +
+        ico('clipe') + '<span style="flex:1">' + esc(a.nome) + '</span>' +
         '<span style="opacity:.7">' + tamanho(a.tamanho) + '</span></div>';
     }).join('');
+    var reac = (m.reacoes || []).map(function (r) {
+      var rot = (REACOES.filter(function (x) { return x[0] === r.simbolo; })[0] ||
+                 [r.simbolo, r.simbolo])[1];
+      return '<button class="reacao' + (r.eu ? ' eu' : '') + '" data-reag="' + esc(r.simbolo) +
+        '" data-msg="' + m.id + '" title="' + esc(rot + (r.quem ? ' — ' + r.quem : '')) +
+        '">' + ico(r.simbolo, 'p') + '<span>' + r.n + '</span></button>';
+    }).join('');
+
     html += '<div class="' + cls + '" data-id="' + m.id + '">' +
       '<div class="bolha">' +
+        (m.encaminhada ? '<div class="enc-marca">' + ico('encaminhar', 'p') +
+            ' encaminhada de ' + esc(m.encaminhada.autor || '—') + '</div>' : '') +
         (sis ? '' : '<div class="msg-autor">' + esc(m.autor || '—') +
                     (aut ? ' · automático' : '') + '</div>') +
         (m.resposta ? '<div class="cita"><strong>' + esc(m.resposta.autor) + '</strong><br>' +
@@ -952,14 +1084,18 @@ function pintarMsgs(rolar) {
           (m.apagada ? 'mensagem apagada' : corpoHtml(m.corpo)) + '</div>' +
         anexos +
       '</div>' +
+      (reac ? '<div class="reacoes">' + reac + '</div>' : '') +
       '<div class="msg-pe">' +
         '<span>' + new Date(m.criado_em).toLocaleTimeString('pt-BR',
           { hour: '2-digit', minute: '2-digit' }) + '</span>' +
         (m.editada ? '<span>editada</span>' : '') +
-        (m.apagada ? '' : '<span class="acoes">' +
-          '<button data-ac="resp">responder</button>' +
-          (meu || (EU && EU.admin) ? '<button data-ac="edit">editar</button>' +
-                                     '<button data-ac="del">apagar</button>' : '') +
+        (m.apagada || sis ? '' : '<span class="acoes">' +
+          bt('reagir', 'reagir', 'Reagir') +
+          bt('resp', 'responder', 'Responder') +
+          bt('enc', 'encaminhar', 'Encaminhar para outra conversa') +
+          bt('comp', 'compartilhar', 'Compartilhar com outra ferramenta') +
+          (meu || (EU && EU.admin)
+            ? bt('edit', 'lapis', 'Editar') + bt('del', 'lixeira', 'Apagar') : '') +
           '</span>') +
       '</div></div>';
   });
@@ -974,6 +1110,98 @@ function anexar(m) {
   var perto = $('#msgs').scrollHeight - $('#msgs').scrollTop - $('#msgs').clientHeight < 140;
   pintarMsgs(perto);
   rpc('chat_marcar_lida', { p_conversa: ATUAL.id });
+}
+
+/* ================================================================
+   Reagir, encaminhar, compartilhar
+   ================================================================ */
+var PALETA = null;
+function abrirPaleta(botao, msgId) {
+  fecharPaleta();
+  var p = document.createElement('div');
+  p.className = 'paleta';
+  p.innerHTML = REACOES.map(function (r) {
+    return '<button data-r="' + r[0] + '" title="' + esc(r[1]) + '">' + ico(r[0]) + '</button>';
+  }).join('');
+  document.body.appendChild(p);
+  var b = botao.getBoundingClientRect();
+  p.style.left = Math.max(8, Math.min(b.left - 60, innerWidth - p.offsetWidth - 8)) + 'px';
+  p.style.top = Math.max(8, b.top - p.offsetHeight - 6) + 'px';
+  p.addEventListener('click', function (e) {
+    var x = e.target.closest('[data-r]'); if (!x) return;
+    rpc('chat_reagir', { p_mensagem: msgId, p_simbolo: x.dataset.r })
+      .then(function () { return abrir(ATUAL.id, true); })
+      .catch(function (er) { aviso(erroDe(er), true); });
+    fecharPaleta();
+  });
+  PALETA = p;
+  setTimeout(function () { document.addEventListener('click', fecharPaleta, { once: true }); }, 0);
+}
+function fecharPaleta() { if (PALETA) { PALETA.remove(); PALETA = null; } }
+
+function linkDaMensagem(msgId) {
+  var base = location.href.split('#')[0].split('?')[0];
+  return base + '?c=' + (ATUAL ? ATUAL.id : '') + '&m=' + msgId;
+}
+
+function trechoDa(m) {
+  return '<strong>' + esc(m.autor || '—') + '</strong><br>' +
+    (m.apagada ? '<em>mensagem apagada</em>'
+               : esc(String(m.corpo || '').slice(0, 220) ||
+                     ((m.anexos || []).length ? '(anexo)' : '')));
+}
+
+function abrirEncaminhar(m) {
+  $('#encPreview').innerHTML = trechoDa(m);
+  $('#encObs').value = '';
+  $('#mdEnc').dataset.msg = m.id;
+  rpc('chat_destinos').then(function (d) {
+    $('#encConversas').innerHTML = (d.conversas || [])
+      .filter(function (c) { return !ATUAL || c.id !== ATUAL.id; })
+      .map(function (c) {
+        return '<label><input type="checkbox" value="' + c.id + '">' +
+          ico(c.tipo === 'contexto' ? 'quadro' : c.tipo === 'grupo' ? 'balao' : 'pessoa') +
+          '<span>' + esc(c.titulo) + '</span></label>';
+      }).join('') || '<div class="vazio">Nenhuma outra conversa.</div>';
+    $('#encPessoas').innerHTML = PESSOAS.map(function (p) {
+      return '<label><input type="checkbox" data-email value="' + esc(p.email) + '">' +
+        '<span>' + esc(p.nome) + '</span>' +
+        '<span style="margin-left:auto;color:var(--ink-3);font-size:11px">' +
+        esc(p.email) + '</span></label>';
+    }).join('');
+    abrirModal('#mdEnc');
+  }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function encaminhar() {
+  var msg = $('#mdEnc').dataset.msg;
+  var convs = $$('#encConversas input:checked').map(function (i) { return i.value; });
+  var emails = $$('#encPessoas input:checked').map(function (i) { return i.value; });
+  if (!convs.length && !emails.length) return aviso('Escolha ao menos um destino.', true);
+  rpc('chat_encaminhar', { p_mensagem: msg, p_conversas: convs, p_emails: emails,
+                           p_comentario: $('#encObs').value })
+    .then(function (n) {
+      fecharModal($('#mdEnc'));
+      aviso('Encaminhada para ' + n + ' conversa(s).');
+      return carregarLista();
+    }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function abrirCompartilhar(m) {
+  $('#compPreview').innerHTML = trechoDa(m);
+  $('#compObs').value = '';
+  $('#compLink').value = linkDaMensagem(m.id);
+  $('#mdComp').dataset.msg = m.id;
+  rpc('chat_destinos').then(function (d) {
+    var fs = d.ferramentas || [];
+    $('#compDestino').innerHTML = fs.length
+      ? fs.map(function (f) {
+          return '<option value="' + esc(f.chave) + '">' + esc(f.nome) + '</option>';
+        }).join('')
+      : '<option value="">Nenhuma ferramenta cadastrada no ADM</option>';
+    $('#btCompartilhar').disabled = !fs.length;
+    abrirModal('#mdComp');
+  }).catch(function (e) { aviso(erroDe(e), true); });
 }
 
 /* ================================================================
@@ -1573,10 +1801,22 @@ function ligarEventos() {
       });
       return;
     }
+    var chip = e.target.closest('[data-reag]');
+    if (chip) {
+      return rpc('chat_reagir', { p_mensagem: chip.dataset.msg, p_simbolo: chip.dataset.reag })
+        .then(function () { return abrir(ATUAL.id, true); })
+        .catch(function (er) { aviso(erroDe(er), true); });
+    }
     var b = e.target.closest('[data-ac]'); if (!b) return;
     var id = e.target.closest('.msg').dataset.id;
     var m = MSGS.filter(function (x) { return x.id === id; })[0]; if (!m) return;
-    if (b.dataset.ac === 'resp') {
+    if (b.dataset.ac === 'reagir') {
+      e.stopPropagation(); return abrirPaleta(b, id);
+    } else if (b.dataset.ac === 'enc') {
+      return abrirEncaminhar(m);
+    } else if (b.dataset.ac === 'comp') {
+      return abrirCompartilhar(m);
+    } else if (b.dataset.ac === 'resp') {
       RESP = m;
       $('#respTxt').textContent = 'Respondendo ' + (m.autor || '') + ': ' +
         String(m.corpo || '').slice(0, 70);
@@ -1624,7 +1864,7 @@ function ligarEventos() {
     var f = this.files[0]; if (!f) return;
     var lim = ((EU && EU.config && EU.config.anexo_mb) || 10) * 1048576;
     if (f.size > lim) { limparAnexo(); return aviso('Arquivo maior que o limite.', true); }
-    ANEXO = f; $('#anxTxt').textContent = '📎 ' + f.name + ' · ' + tamanho(f.size);
+    ANEXO = f; $('#anxTxt').innerHTML = ico('clipe') + ' ' + esc(f.name) + ' · ' + tamanho(f.size);
     $('#anxBanner').hidden = false;
   });
 
@@ -1909,7 +2149,7 @@ function iniciar() {
       var s = localStorage.getItem('chat_som');
       if (s !== null) SOM = s === '1';
     } catch (x) {}
-    $('#btSom').innerHTML = SOM ? '&#128276;' : '&#128277;';
+    $('#btSom').innerHTML = ico(SOM ? 'sino' : 'sinoOff');
     $('#btSom').title = SOM ? 'Aviso sonoro ligado' : 'Aviso sonoro desligado';
     if (SOM && window.Notification && Notification.permission === 'default') {
       document.addEventListener('click', function pedir() {
