@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chat · Wendell Global Interlining</title>
+<script src="https://textilegroup.github.io/wendell-users/guard.js"
+        data-app="chat" data-tema="completo"></script>
+<style>
+/* ===================================================================
+   Chat WGI — segue o design system (theme.css): paleta vinho,
+   Archivo, cards com cabeçalho de linha vinho, dark mode por tokens.
+   =================================================================== */
+html,body{height:100%}
+/* o atributo hidden tem de vencer as classes com display: sem isto, a faixa de
+   anexo e a de resposta ocupam espaço mesmo vazias */
+[hidden]{display:none!important}
+body{display:flex;flex-direction:column;overflow:hidden}
+body.embed .app-header,body.embed [data-guard-barra]{display:none}
+body.embed .wrap{padding:0;grid-template-columns:1fr;gap:0}
+body.embed .lateral,body.embed .trilho{display:none}
+body.embed .pane{border:0;border-radius:0;box-shadow:none}
+
+.wrap{flex:1;min-height:0;width:100%;max-width:1560px;margin:0 auto;
+  padding:12px 16px 14px;display:grid;grid-template-columns:58px 312px 1fr;gap:12px}
+
+/* -------- trilho de conversas (estilo Bitrix) -------- */
+.trilho{display:flex;flex-direction:column;align-items:center;gap:9px;padding:10px 7px;
+  overflow-y:auto;overscroll-behavior:contain;background:var(--card);border:1px solid var(--line);
+  border-radius:10px;box-shadow:var(--shadow);scrollbar-width:none}
+.trilho::-webkit-scrollbar{width:0;height:0}
+.tr-eu{flex:0 0 auto;position:relative;width:40px;height:40px;border-radius:50%;display:grid;
+  place-items:center;background:var(--wine);color:#fff;font:700 12px Archivo,sans-serif;
+  border:2px solid var(--wine-soft)}
+.tr-risco{flex:0 0 auto;width:26px;height:1px;background:var(--line);margin:1px 0 2px}
+.tr-item{position:relative;flex:0 0 auto;width:40px;height:40px;border-radius:13px;display:grid;
+  place-items:center;color:#fff;font:700 12px Archivo,sans-serif;cursor:pointer;opacity:.38;
+  border:2px solid transparent;transition:opacity .15s,transform .12s}
+.tr-item:hover{opacity:1;transform:translateY(-1px)}
+.tr-item.nova{opacity:1}
+.tr-item[aria-selected="true"]{opacity:1;
+  box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--wine)}
+.tr-selo{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;
+  border-radius:9px;background:var(--neg);color:#fff;font:700 10px Archivo,sans-serif;
+  display:grid;place-items:center;border:2px solid var(--card)}
+.tr-selo.at{background:var(--s2)}
+.tr-vazio{font-size:9.5px;color:var(--ink-3);text-align:center;line-height:1.3;padding:6px 0}
+.pane{background:var(--card);border:1px solid var(--line);border-radius:10px;
+  box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.pane-hd{display:flex;align-items:center;gap:8px;padding:9px 12px 8px;
+  border-bottom:2px solid var(--wine-soft);flex-wrap:wrap;flex:0 0 auto}
+.pane-hd h2{margin:0;font-size:12px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--wine)}
+.pane-hd .sub{font-size:11px;color:var(--ink-3)}
+.rolar{overflow-y:auto;overscroll-behavior:contain;flex:1;min-height:0}
+
+button{font-family:"Archivo",Arial,sans-serif}
+.bt{font:600 11.5px Archivo,sans-serif;border:1px solid var(--line);border-radius:8px;
+  background:var(--card);color:var(--ink-2);padding:5px 10px;cursor:pointer;white-space:nowrap}
+.bt:hover{border-color:var(--wine-soft);color:var(--wine)}
+.bt.pri{background:var(--wine);border-color:var(--wine);color:#fff}
+.bt.pri:hover{background:var(--wine-deep);color:#fff}
+.bt.min{padding:3px 7px;font-size:11px}
+.bt[disabled]{opacity:.45;cursor:not-allowed}
+.ic{width:28px;height:28px;display:grid;place-items:center;padding:0;font-size:14px;line-height:1}
+input,select,textarea{font:12.5px Archivo,sans-serif;color:var(--ink);background:var(--card);
+  border:1px solid var(--line);border-radius:8px;padding:6px 9px;width:100%}
+textarea{resize:vertical;line-height:1.45}
+label.cmp{display:flex;flex-direction:column;gap:4px;font-size:10px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+label.cmp>input,label.cmp>select,label.cmp>textarea{font-weight:400;letter-spacing:0;
+  text-transform:none;color:var(--ink);font-size:12.5px}
+.linha{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* -------- lista de conversas -------- */
+.busca-lateral{padding:8px 10px;border-bottom:1px solid var(--line-2);flex:0 0 auto}
+.filtros{display:flex;gap:2px;padding:6px 8px 7px;background:var(--chip);
+  border-bottom:1px solid var(--line-2);flex:0 0 auto;overflow-x:auto}
+.filtros button{font:600 10.5px Archivo,sans-serif;letter-spacing:.05em;text-transform:uppercase;
+  border:0;background:transparent;color:var(--ink-2);padding:4px 9px;border-radius:6px;
+  cursor:pointer;white-space:nowrap}
+.filtros button[aria-pressed="true"]{background:var(--wine);color:#fff}
+.conv{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;cursor:pointer;
+  border-bottom:1px solid var(--line-2);border-left:3px solid transparent}
+.conv:hover{background:var(--sunk)}
+.conv[aria-selected="true"]{background:var(--sunk);border-left-color:var(--wine)}
+.av{width:31px;height:31px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  font:700 10.5px Archivo,sans-serif;color:#fff;background:var(--wine-soft)}
+.av.g{background:var(--s3)} .av.k{background:var(--s4);border-radius:8px}
+.conv-txt{min-width:0;flex:1}
+.conv-top{display:flex;align-items:baseline;gap:6px}
+.conv-nome{font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;flex:1}
+.conv-hora{font-size:9.5px;color:var(--ink-3);white-space:nowrap}
+.conv-prev{font-size:11.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;margin-top:1px}
+.selo{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--wine);
+  color:#fff;font:700 10px Archivo,sans-serif;display:grid;place-items:center}
+.selo.at{background:var(--s2)}
+.vazio{padding:26px 16px;text-align:center;color:var(--ink-3);font-size:12px}
+
+/* -------- thread -------- */
+.thread-hd{display:flex;align-items:center;gap:10px;padding:8px 12px;
+  border-bottom:2px solid var(--wine-soft);flex:0 0 auto;flex-wrap:wrap}
+.thread-hd .tit{font-weight:700;font-size:13.5px;line-height:1.15}
+.thread-hd .ctx{font-size:10.5px;color:var(--ink-3)}
+.thread-hd .ctx a{color:var(--s3)}
+/* pilha de participantes: discreta no cabeçalho, abre a lista ao clicar */
+.avstack{display:flex;align-items:center;cursor:pointer;padding:2px;margin-right:6px}
+.avstack .av{width:24px;height:24px;font-size:9px;border:2px solid var(--card);
+  margin-left:-7px;box-shadow:0 1px 2px rgba(38,37,42,.12)}
+.avstack .av:first-child{margin-left:0}
+.avstack .av.mais{background:var(--chip);color:var(--ink-2);font-weight:700}
+.avstack .av.ia{background:var(--s3)}
+.avstack:hover .av{border-color:var(--wine-soft)}
+@media (max-width:560px){.avstack .av:nth-child(n+4){display:none}}
+.msgs{padding:14px 14px 6px;display:flex;flex-direction:column;gap:9px;background:var(--sunk)}
+.dia{align-self:center;font:700 9.5px Archivo,sans-serif;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3);background:var(--card);border:1px solid var(--line);
+  border-radius:20px;padding:3px 11px;margin:5px 0}
+.msg{max-width:min(660px,82%);align-self:flex-start;display:flex;flex-direction:column;gap:2px}
+.msg.meu{align-self:flex-end;align-items:flex-end}
+.bolha{background:var(--card);border:1px solid var(--line);border-radius:12px 12px 12px 3px;
+  padding:7px 11px 6px;box-shadow:var(--shadow);position:relative}
+.msg.meu .bolha{background:var(--wine);border-color:var(--wine);color:#fff;
+  border-radius:12px 12px 3px 12px}
+.msg.meu .bolha a{color:#fff;text-decoration:underline}
+.msg-autor{font:700 10.5px Archivo,sans-serif;color:var(--wine);margin-bottom:2px}
+.msg.meu .msg-autor{display:none}
+.msg-corpo{font-size:12.8px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.msg-pe{font-size:9.5px;color:var(--ink-3);display:flex;gap:6px;align-items:center;padding:0 4px}
+.msg.meu .msg-pe{justify-content:flex-end}
+.msg.apagada .msg-corpo{font-style:italic;color:var(--ink-3)}
+.msg.sis{align-self:center;max-width:90%}
+.msg.sis .bolha{background:transparent;border:0;box-shadow:none;text-align:center;
+  color:var(--ink-3);font-size:11px;font-style:italic;padding:2px}
+.msg.sis .msg-autor,.msg.sis .msg-pe{display:none}
+.msg.aut .bolha{background:var(--chip);border-style:dashed}
+.cita{border-left:3px solid var(--wine-soft);padding:2px 0 2px 7px;margin-bottom:4px;
+  font-size:11px;opacity:.85}
+.msg.meu .cita{border-left-color:rgba(255,255,255,.6)}
+.acoes{display:flex;gap:4px;opacity:0;transition:opacity .12s}
+.msg:hover .acoes,.msg:focus-within .acoes{opacity:1}
+.acoes button{border:0;background:none;color:var(--ink-3);cursor:pointer;font-size:9.5px;
+  font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:1px 3px}
+.acoes button:hover{color:var(--wine)}
+.anexo{display:flex;align-items:center;gap:6px;margin-top:5px;padding:5px 8px;
+  border:1px solid var(--line);border-radius:8px;background:var(--sunk);font-size:11.5px;
+  cursor:pointer;color:var(--ink)}
+.msg.meu .anexo{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
+.anexo img{max-width:230px;border-radius:6px;display:block}
+.mencao{background:var(--s2);color:#fff;border-radius:4px;padding:0 3px;font-weight:600}
+
+/* -------- áudio -------- */
+.audio{display:flex;align-items:center;gap:8px;margin-top:5px;padding:5px 9px;
+  border:1px solid var(--line);border-radius:20px;background:var(--sunk);font-size:11.5px;
+  cursor:pointer;color:var(--ink);min-width:170px}
+.msg.meu .audio{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3);color:#fff}
+.audio .play{width:22px;height:22px;border-radius:50%;background:var(--wine);color:#fff;
+  display:grid;place-items:center;font-size:10px;flex:0 0 auto}
+.msg.meu .audio .play{background:#fff;color:var(--wine)}
+.audio .onda{flex:1;height:14px;background:repeating-linear-gradient(90deg,
+  currentColor 0 2px,transparent 2px 5px);opacity:.35;border-radius:2px}
+.audio audio{width:100%;height:32px}
+.gravando{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--neg);
+  background:var(--chip);border:1px solid var(--neg);border-radius:8px;padding:6px 10px;
+  margin-bottom:6px}
+.gravando .bolinha{width:9px;height:9px;border-radius:50%;background:var(--neg);
+  animation:pulsa 1s infinite}
+@keyframes pulsa{50%{opacity:.25}}
+
+/* -------- IA -------- */
+.msg.ia .bolha{border-color:var(--s3);border-left:3px solid var(--s3);background:var(--card)}
+.msg.ia .msg-autor{color:var(--s3)}
+.bt.ia{border-color:var(--s3);color:var(--s3)}
+.bt.ia[aria-pressed="true"]{background:var(--s3);border-color:var(--s3);color:#fff}
+.ia-dica{font-size:10.5px;color:var(--ink-3);margin-top:5px}
+
+/* -------- composer -------- */
+.comp{flex:0 0 auto;border-top:1px solid var(--line);padding:8px 10px;background:var(--card)}
+.comp .caixa{display:flex;gap:7px;align-items:flex-end}
+.comp textarea{min-height:38px;max-height:150px;border-radius:10px}
+.resp-banner,.anx-banner{display:flex;align-items:center;gap:8px;font-size:11px;
+  background:var(--chip);border:1px solid var(--line);border-left:3px solid var(--wine);
+  border-radius:8px;padding:4px 8px;margin-bottom:6px;color:var(--ink-2)}
+.sugest{position:absolute;bottom:100%;left:10px;right:10px;max-height:190px;overflow:auto;
+  background:var(--card);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 8px 26px rgba(38,37,42,.16);z-index:30;margin-bottom:6px}
+.sugest div{padding:7px 10px;cursor:pointer;font-size:12px;display:flex;gap:8px;align-items:center}
+.sugest div:hover,.sugest div.on{background:var(--sunk)}
+
+/* -------- modal -------- */
+.modal{position:fixed;inset:0;background:rgba(20,19,22,.55);display:none;place-items:center;
+  z-index:200;padding:16px}
+.modal.on{display:grid}
+.modal-cx{background:var(--card);border:1px solid var(--line);border-radius:12px;width:100%;
+  max-width:560px;max-height:88vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.28)}
+.modal-hd{padding:12px 16px;border-bottom:2px solid var(--wine-soft);display:flex;
+  align-items:center;gap:10px}
+.modal-hd h3{margin:0;font-size:12px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--wine)}
+.modal-bd{padding:14px 16px;display:flex;flex-direction:column;gap:11px}
+.modal-pe{padding:10px 16px 14px;display:flex;gap:8px;justify-content:flex-end}
+.lista-check{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.lista-check label{display:flex;gap:8px;align-items:center;padding:6px 10px;font-size:12.5px;
+  border-bottom:1px solid var(--line-2);cursor:pointer}
+.lista-check input{width:auto}
+
+/* -------- ADM -------- */
+.adm{display:none;flex:1;min-height:0;width:100%;max-width:1560px;margin:0 auto;
+  padding:12px 16px 14px;flex-direction:column;gap:12px;overflow:auto}
+body.modo-adm .adm{display:flex}
+body.modo-adm .wrap{display:none}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;
+  box-shadow:var(--shadow);padding:9px 11px}
+.kpi-label{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3)}
+.kpi-value{font-family:"Archivo Narrow",Archivo,Arial,sans-serif;font-size:24px;font-weight:700;
+  line-height:1.05}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;padding:8px 14px 0;border-bottom:1px solid var(--line)}
+.tab{font:700 11px Archivo,sans-serif;letter-spacing:.06em;text-transform:uppercase;
+  padding:7px 11px;border:1px solid transparent;border-bottom:0;background:transparent;
+  color:var(--ink-3);border-radius:8px 8px 0 0;cursor:pointer;margin-bottom:-1px}
+.tab[aria-selected="true"]{background:var(--card);border-color:var(--line);color:var(--wine);
+  box-shadow:inset 0 2px 0 var(--wine)}
+.aba{display:none;padding:12px 14px 16px}
+.aba.on{display:block}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}
+thead th{position:sticky;top:0;z-index:3;background:var(--sunk);color:var(--ink-2);font-size:10px;
+  font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:7px 8px;text-align:left;
+  white-space:nowrap;border-bottom:1px solid var(--line)}
+tbody td{padding:5px 8px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+tbody tr:hover td{background:var(--sunk)}
+td.num,th.num{text-align:right;font-family:"Archivo Narrow",Archivo,Arial,sans-serif}
+.tag{display:inline-block;font:700 9.5px Archivo,sans-serif;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 7px;border-radius:20px;background:var(--chip);
+  color:var(--ink-2);border:1px solid var(--line)}
+.tag.ok{background:var(--pos);color:#fff;border-color:transparent}
+.tag.no{background:var(--neg);color:#fff;border-color:transparent}
+.tag.w{background:var(--s2);color:#fff;border-color:transparent}
+.dica{font-size:11.5px;color:var(--ink-3);line-height:1.5}
+code{background:var(--chip);border:1px solid var(--line);border-radius:5px;padding:1px 5px;
+  font-size:11px}
+.aviso{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);
+  color:var(--bg);padding:9px 16px;border-radius:9px;font-size:12.5px;z-index:400;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .2s}
+.aviso.on{opacity:1}
+.aviso.erro{background:var(--neg);color:#fff}
+
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .trilho{flex-direction:row;padding:7px 8px;gap:8px;overflow-x:auto;overflow-y:hidden}
+  .tr-risco{width:1px;height:26px;margin:0 2px}
+  .lateral{display:none}
+  body.ver-lista .lateral{display:flex}
+  body.ver-lista .conversa{display:none}
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .msg{max-width:92%}
+}
+@media (max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<header class="app-header no-print">
+  <div class="app-logo">CH</div>
+  <div class="app-brand">
+    <h1 id="tituloApp">Chat</h1>
+    <p id="subApp">Wendell Global Interlining</p>
+  </div>
+  <div class="app-actions">
+    <button class="header-chip" id="btBuscaGlobal">Buscar</button>
+    <button class="header-chip" id="btNova">Nova conversa</button>
+    <button class="header-chip" id="btAdm" hidden>Administração</button>
+    <button class="header-chip" id="btVoltarChat" hidden>Voltar ao chat</button>
+    <button class="header-chip" id="btSom" title="Aviso sonoro de mensagem nova">&#128276;</button>
+    <button class="header-chip" id="btTema" title="Claro / escuro">◐</button>
+  </div>
+</header>
+
+<!-- ============================ CHAT ============================ -->
+<div class="wrap">
+  <!-- trilho: as conversas de quem está logado, sempre à mão -->
+  <aside class="trilho" id="trilho"></aside>
+
+  <!-- lista de conversas -->
+  <aside class="pane lateral">
+    <div class="busca-lateral">
+      <input type="search" id="filtroLista" placeholder="Filtrar conversas...">
+    </div>
+    <div class="filtros" id="filtros">
+      <button data-f="tudo" aria-pressed="true">Tudo</button>
+      <button data-f="nao">Não lidas</button>
+      <button data-f="direta">Diretas</button>
+      <button data-f="grupo">Grupos</button>
+      <button data-f="contexto">Negócios</button>
+      <button data-f="arq">Arquivadas</button>
+    </div>
+    <div class="rolar" id="listaConversas"></div>
+  </aside>
+
+  <!-- conversa aberta -->
+  <section class="pane conversa">
+    <div class="thread-hd" id="threadHd">
+      <button class="bt ic" id="btVoltarLista" style="display:none">‹</button>
+      <div style="min-width:0;flex:1">
+        <div class="tit" id="convTitulo">Selecione uma conversa</div>
+        <div class="ctx" id="convCtx"></div>
+      </div>
+      <div class="avstack" id="avMembros" title="Participantes"></div>
+      <button class="bt min ia" id="btIa" hidden aria-pressed="false"
+              title="Colocar a IA nesta conversa">IA</button>
+      <button class="bt min" id="btMembros" hidden>Participantes</button>
+      <button class="bt min" id="btBuscaConv" hidden>Buscar</button>
+      <button class="bt min" id="btMais" hidden>⋯</button>
+    </div>
+    <div class="rolar msgs" id="msgs">
+      <div class="vazio">Escolha uma conversa à esquerda, ou crie uma nova.</div>
+    </div>
+    <div class="comp" id="comp" hidden>
+      <div class="resp-banner" id="respBanner" hidden>
+        <span style="flex:1" id="respTxt"></span>
+        <button class="bt min" id="respCancel">✕</button>
+      </div>
+      <div class="anx-banner" id="anxBanner" hidden>
+        <span style="flex:1" id="anxTxt"></span>
+        <button class="bt min" id="anxCancel">✕</button>
+      </div>
+      <div class="gravando" id="gravBanner" hidden>
+        <span class="bolinha"></span>
+        <span style="flex:1">Gravando… <b id="gravTempo">0:00</b></span>
+        <button class="bt min" id="gravCancel">Descartar</button>
+        <button class="bt min pri" id="gravParar">Concluir</button>
+      </div>
+      <div class="caixa" style="position:relative">
+        <div class="sugest" id="sugest" hidden></div>
+        <button class="bt ic" id="btAnexo" title="Anexar arquivo">📎</button>
+        <button class="bt ic" id="btAudio" title="Gravar mensagem de áudio">&#127908;</button>
+        <input type="file" id="arquivo" hidden>
+        <textarea id="entrada" rows="1" placeholder="Escreva uma mensagem…  (@ menciona alguém, Enter envia)"></textarea>
+        <button class="bt ia" id="btPerguntarIa" hidden
+                title="Mandar o que está escrito para a IA">&#10024; IA</button>
+        <button class="bt pri" id="btEnviar">Enviar</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ========================= ADMINISTRAÇÃO ========================= -->
+<div class="adm">
+  <div class="kpis" id="admKpis"></div>
+  <div class="pane" style="overflow:visible">
+    <div class="tabs" id="admTabs">
+      <button class="tab" data-a="usuarios" aria-selected="true">Usuários e permissões</button>
+      <button class="tab" data-a="conversas">Conversas</button>
+      <button class="tab" data-a="webhooks">Integrações</button>
+      <button class="tab" data-a="automacoes">Automações</button>
+      <button class="tab" data-a="ia">IA</button>
+      <button class="tab" data-a="eventos">Fila de eventos</button>
+      <button class="tab" data-a="config">Configurações</button>
+    </div>
+
+    <div class="aba on" id="aba-usuarios">
+      <p class="dica">O nível vem da Central de Acesso. Aqui você sobrepõe o comportamento
+        <strong>dentro do chat</strong>: papel, o que a pessoa pode criar e bloqueio temporário.
+        Quem estiver como <em>herdado</em> segue o nível do hub.</p>
+      <div class="rolar" style="max-height:52vh;margin-top:10px"><table id="tbUsuarios"></table></div>
+    </div>
+
+    <div class="aba" id="aba-conversas">
+      <div class="linha" style="margin-bottom:9px">
+        <input type="search" id="admBuscaConv" placeholder="Buscar por título ou id de contexto…"
+               style="max-width:320px">
+        <button class="bt" id="btAdmBuscaConv">Buscar</button>
+      </div>
+      <div class="rolar" style="max-height:56vh"><table id="tbConversas"></table></div>
+    </div>
+
+    <div class="aba" id="aba-webhooks">
+      <p class="dica">Cada evento do chat entra na fila <code>chat_eventos</code>. Um webhook aponta
+        para onde essa fila deve ser entregue — Trello, Make, n8n, Bitrix ou um endpoint próprio.
+        O consumidor lê a fila, envia e marca o evento como processado; por isso trocar de
+        ferramenta depois não mexe em nada do chat.</p>
+      <div class="linha" style="margin:10px 0"><button class="bt pri" id="btNovoWebhook">Novo webhook</button></div>
+      <table id="tbWebhooks"></table>
+    </div>
+
+    <div class="aba" id="aba-automacoes">
+      <p class="dica">Duas famílias de regra, ambas executadas pelo banco:
+        <strong>ao criar um card</strong> (monta a roda de conversa antes de alguém abrir o card)
+        e <strong>ao chegar mensagem</strong> (responde, avisa, chama gente).</p>
+      <div class="linha" style="margin:10px 0">
+        <button class="bt pri" id="btNovaAutoCard">Nova automação de card</button>
+        <button class="bt" id="btNovaAuto">Nova automação de mensagem</button>
+      </div>
+      <table id="tbAutomacoes"></table>
+    </div>
+
+    <div class="aba" id="aba-ia">
+      <p class="dica">Cada conversa tem um assento reservado para a IA. O chat guarda o pedido
+        na fila (<code>ia.solicitada</code>, com as 20 últimas mensagens e o contexto do card) e
+        grava a resposta por <code>chat_ia_responder</code>. Quem pensa é um serviço externo —
+        uma Edge Function ou um cenário do Make lendo a fila. Enquanto ele não existir, dá para
+        testar a ligação escrevendo a resposta à mão aqui embaixo.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;
+                  max-width:760px;margin-top:12px">
+        <label class="cmp">Nome que a IA usa nas mensagens
+          <input id="iaNome" placeholder="Assistente WGI"></label>
+        <label class="cmp">Disponível nas conversas
+          <select id="iaAtiva">
+            <option value="1">Sim — dá para ligar em cada conversa</option>
+            <option value="0">Não — botão escondido</option>
+          </select></label>
+        <label class="cmp">Ligar sozinha nas conversas de card
+          <select id="iaAuto">
+            <option value="0">Não</option>
+            <option value="1">Sim</option>
+          </select></label>
+      </div>
+      <div class="linha" style="margin-top:14px"><button class="bt pri" id="btSalvarIa">Salvar IA</button></div>
+
+      <div class="linha" style="margin-top:22px;align-items:flex-end">
+        <label class="cmp" style="flex:1;min-width:240px">Conversa (id) para um teste de resposta
+          <select id="iaTesteConv"></select></label>
+        <label class="cmp" style="flex:2;min-width:240px">Texto da resposta
+          <input id="iaTesteTxt" placeholder="Resumo do card: …"></label>
+        <button class="bt" id="btTesteIa">Responder como IA</button>
+      </div>
+      <p class="dica" style="margin-top:14px">Contrato para quem for escrever o serviço:
+        ler <code>chat_eventos</code> onde <code>tipo='ia.solicitada'</code> e
+        <code>status='pendente'</code>; responder com
+        <code>chat_ia_responder(p_conversa, p_texto, p_evento)</code> usando a
+        <em>service key</em>. A função já marca o evento como enviado.</p>
+    </div>
+
+    <div class="aba" id="aba-eventos">
+      <div class="linha" style="margin-bottom:9px">
+        <select id="admFiltroEv" style="max-width:190px">
+          <option value="">Todos os status</option>
+          <option value="pendente">Pendentes</option>
+          <option value="enviado">Enviados</option>
+          <option value="erro">Com erro</option>
+          <option value="ignorado">Ignorados</option>
+        </select>
+        <button class="bt" id="btRecarregarEv">Atualizar</button>
+        <button class="bt" id="btLimparEv">Limpar processados (30 dias)</button>
+      </div>
+      <div class="rolar" style="max-height:56vh"><table id="tbEventos"></table></div>
+    </div>
+
+    <div class="aba" id="aba-config">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;max-width:760px">
+        <label class="cmp">Nome exibido no cabeçalho
+          <input id="cfgNome" placeholder="Chat WGI"></label>
+        <label class="cmp">Tamanho máximo de anexo (MB)
+          <input id="cfgAnexo" type="number" min="1" max="50"></label>
+        <label class="cmp">Retenção de mensagens (dias, 0 = sem limite)
+          <input id="cfgRet" type="number" min="0"></label>
+        <label class="cmp">URL base da ferramenta de funis (para o link do card)
+          <input id="cfgFunis" placeholder="https://textilegroup.github.io/wendell-pipelines/"></label>
+      </div>
+      <div class="linha" style="margin-top:14px"><button class="bt pri" id="btSalvarCfg">Salvar configurações</button></div>
+      <p class="dica" style="margin-top:18px">
+        <strong>Como outra ferramenta abre um chat.</strong> Basta chamar, autenticado pela Central:<br>
+        <code>rpc('chat_abrir_card', { p_card_id: &lt;uuid do card&gt;, p_ref: &lt;url do card&gt; })</code><br>
+        ou, para qualquer outro objeto (pedido, amostra, card do Trello):<br>
+        <code>rpc('chat_abrir_contexto', { p_tipo:'trello_card', p_id:'&lt;id&gt;', p_titulo:'…', p_ref:'…', p_emails:['a@b.com'] })</code><br>
+        A função devolve o id da conversa; a tela abre em
+        <code>?c=&lt;id&gt;</code> ou embutida com <code>?card=&lt;uuid&gt;&amp;modo=embed</code>.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ MODAIS ============================ -->
+<div class="modal" id="mdNova"><div class="modal-cx">
+  <div class="modal-hd"><h3 id="mdNovaTit">Nova conversa</h3></div>
+  <div class="modal-bd">
+    <div class="filtros" style="background:transparent;border:0;padding:0" id="tipoNova">
+      <button data-t="direta" aria-pressed="true">Conversa direta</button>
+      <button data-t="grupo">Grupo</button>
+    </div>
+    <label class="cmp" id="wrapTitGrupo" hidden>Nome do grupo
+      <input id="novoTitulo" placeholder="Ex.: Comercial — Automotivo"></label>
+    <label class="cmp" id="wrapDescGrupo" hidden>Descrição (opcional)
+      <input id="novoDesc"></label>
+    <label class="cmp">Participantes
+      <input type="search" id="buscaPessoa" placeholder="Filtrar pessoas…"></label>
+    <div class="lista-check" id="listaPessoas"></div>
+  </div>
+  <div class="modal-pe">
+    <button class="bt" data-fechar>Cancelar</button>
+    <button class="bt pri" id="btCriarConversa">Criar</button>
+  </div>
+</div></div>
+
+<div class="modal" id="mdMembros"><div class="modal-cx">
+  <div class="modal-hd"><h3>Participantes</h3></div>
+  <div class="modal-bd">
+    <div id="listaMembros"></div>
+    <div class="linha" id="wrapAddMembro">
+      <select id="selAddMembro" style="flex:1"></select>
+      <button class="bt pri" id="btAddMembro">Adicionar</button>
+    </div>
+  </div>
+  <div class="modal-pe"><button class="bt" data-fechar>Fechar</button></div>
+</div></div>
+
+<div class="modal" id="mdBusca"><div class="modal-cx">
+  <div class="modal-hd"><h3>Buscar mensagens</h3></div>
+  <div class="modal-bd">
+    <div class="linha">
+      <input id="termoBusca" placeholder="Palavra ou expressão…" style="flex:1">
+      <button class="bt pri" id="btFazerBusca">Buscar</button>
+    </div>
+    <label style="display:flex;gap:7px;align-items:center;font-size:12px">
+      <input type="checkbox" id="buscaSoConv" style="width:auto"> Somente nesta conversa</label>
+    <div id="resultBusca" style="max-height:48vh;overflow:auto"></div>
+  </div>
+  <div class="modal-pe"><button class="bt" data-fechar>Fechar</button></div>
+</div></div>
+
+<div class="modal" id="mdWebhook"><div class="modal-cx">
+  <div class="modal-hd"><h3>Webhook</h3></div>
+  <div class="modal-bd">
+    <input type="hidden" id="whId">
+    <label class="cmp">Nome<input id="whNome" placeholder="Ex.: Trello — cards comerciais"></label>
+    <label class="cmp">URL de destino<input id="whUrl" placeholder="https://…"></label>
+    <label class="cmp">Segredo (enviado no cabeçalho pelo consumidor da fila)
+      <input id="whSegredo"></label>
+    <label class="cmp">Eventos (um por linha)
+      <textarea id="whEventos" rows="4">mensagem.criada</textarea></label>
+    <label class="cmp">Filtro opcional (JSON)
+      <textarea id="whFiltro" rows="3">{}</textarea></label>
+    <label style="display:flex;gap:7px;align-items:center;font-size:12px">
+      <input type="checkbox" id="whAtivo" checked style="width:auto"> Ativo</label>
+  </div>
+  <div class="modal-pe">
+    <button class="bt" data-fechar>Cancelar</button>
+    <button class="bt pri" id="btSalvarWh">Salvar</button>
+  </div>
+</div></div>
+
+<div class="modal" id="mdAutoCard"><div class="modal-cx">
+  <div class="modal-hd"><h3>Automação ao criar card</h3></div>
+  <div class="modal-bd">
+    <input type="hidden" id="acId">
+    <p class="dica">Quando nascer um card no funil escolhido, o bate-papo dele já é criado
+      com estas pessoas dentro — ninguém precisa abrir o card para a conversa existir.</p>
+    <label class="cmp">Nome da regra<input id="acNome" placeholder="Ex.: Pedido novo — comercial e cadastro"></label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label class="cmp">Funil
+        <select id="acFunil"></select></label>
+      <label class="cmp">Etapa (opcional)
+        <select id="acEtapa"><option value="">Qualquer etapa</option></select></label>
+    </div>
+    <label class="cmp">Só quando o título do card contiver (opcional, separado por vírgula)
+      <input id="acPalavras" placeholder="amostra, exportação"></label>
+    <label class="cmp">Participantes que entram automaticamente</label>
+    <div class="lista-check" id="acPessoas"></div>
+    <label class="cmp">Mensagem de abertura (opcional)
+      <input id="acMsg" placeholder="Conversa do card {card}. Dúvidas do pedido, aqui."></label>
+    <label style="display:flex;gap:7px;align-items:center;font-size:12px">
+      <input type="checkbox" id="acIa" style="width:auto"> Já colocar a IA nesta conversa</label>
+    <label style="display:flex;gap:7px;align-items:center;font-size:12px">
+      <input type="checkbox" id="acAtivo" checked style="width:auto"> Regra ativa</label>
+  </div>
+  <div class="modal-pe">
+    <button class="bt" data-fechar>Cancelar</button>
+    <button class="bt pri" id="btSalvarAutoCard">Salvar</button>
+  </div>
+</div></div>
+
+<div class="modal" id="mdAuto"><div class="modal-cx">
+  <div class="modal-hd"><h3>Automação</h3></div>
+  <div class="modal-bd">
+    <input type="hidden" id="auId">
+    <label class="cmp">Nome<input id="auNome" placeholder="Ex.: Avisar quando falarem em urgente"></label>
+    <label class="cmp">Descrição<input id="auDesc"></label>
+    <label class="cmp">Gatilho
+      <select id="auGatilho">
+        <option value="mensagem_criada">Ao receber qualquer mensagem</option>
+        <option value="palavra_chave">Ao receber mensagem com palavra-chave</option>
+      </select></label>
+    <label class="cmp">Tipo de conversa (vazio = qualquer)
+      <select id="auTipo">
+        <option value="">Qualquer</option>
+        <option value="direta">Direta</option>
+        <option value="grupo">Grupo</option>
+        <option value="contexto">Vinculada a um negócio</option>
+      </select></label>
+    <label class="cmp">Tipo de contexto (vazio = qualquer)
+      <input id="auCtx" placeholder="funil_card, pedido, trello_card…"></label>
+    <label class="cmp">Palavras-chave (separadas por vírgula)
+      <input id="auPalavras" placeholder="urgente, proposta, reclamação"></label>
+    <label class="cmp">Ações (JSON)
+      <textarea id="auAcoes" rows="5">[{"tipo":"postar_mensagem","texto":"{autor} sinalizou um ponto urgente."}]</textarea></label>
+    <p class="dica">Ações aceitas: <code>{"tipo":"postar_mensagem","texto":"…"}</code> (usa
+      <code>{autor}</code>, <code>{conversa}</code>, <code>{mensagem}</code>),
+      <code>{"tipo":"adicionar_membro","email":"…"}</code> e
+      <code>{"tipo":"webhook","webhook_id":"…"}</code>.</p>
+    <label style="display:flex;gap:7px;align-items:center;font-size:12px">
+      <input type="checkbox" id="auAtivo" checked style="width:auto"> Ativa</label>
+  </div>
+  <div class="modal-pe">
+    <button class="bt" data-fechar>Cancelar</button>
+    <button class="bt pri" id="btSalvarAuto">Salvar</button>
+  </div>
+</div></div>
+
+<div class="aviso" id="aviso"></div>
+
+<script>
+(function () {
+'use strict';
+
+/* ================================================================
+   Estado
+   ================================================================ */
+var sb, EU = null, PESSOAS = [], CONVERSAS = [], ATUAL = null, MSGS = [],
+    FILTRO = 'tudo', RESP = null, ANEXO = null, MENCOES = {}, CANAL = null,
+    SOM = true, GRAV = null, FUNIS_ADM = [],
+    PARAMS = new URLSearchParams(location.search),
+    EMBED = PARAMS.get('modo') === 'embed';
+
+var $ = function (s) { return document.querySelector(s); };
+var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+function esc(t) {
+  return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function aviso(txt, erro) {
+  var a = $('#aviso');
+  a.textContent = txt; a.className = 'aviso on' + (erro ? ' erro' : '');
+  clearTimeout(a._t); a._t = setTimeout(function () { a.className = 'aviso'; }, 3400);
+}
+function iniciais(nome) {
+  var p = String(nome || '?').trim().split(/\s+/);
+  return ((p[0] || '?')[0] + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
+}
+function hora(iso) {
+  if (!iso) return '';
+  var d = new Date(iso), h = new Date(), um = 86400000;
+  var mesmoDia = d.toDateString() === h.toDateString();
+  if (mesmoDia) return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (h - d < 7 * um) return d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+function dataLonga(iso) {
+  var d = new Date(iso), h = new Date();
+  if (d.toDateString() === h.toDateString()) return 'Hoje';
+  var o = new Date(h.getTime() - 86400000);
+  if (d.toDateString() === o.toDateString()) return 'Ontem';
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+function tamanho(b) {
+  if (!b) return '';
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(0) + ' KB';
+  return (b / 1048576).toFixed(1) + ' MB';
+}
+function rpc(fn, args) {
+  return sb.rpc(fn, args || {}).then(function (r) {
+    if (r.error) throw new Error(r.error.message || r.error.hint || 'Erro no servidor');
+    return r.data;
+  });
+}
+function erroDe(e) {
+  var m = (e && e.message) || String(e);
+  return m.replace(/^.*?:\s*/, '');
+}
+
+/* ================================================================
+   Aviso sonoro — dois toques curtos gerados na hora, sem arquivo
+   ================================================================ */
+var _audioCtx = null;
+function tocarAviso() {
+  if (!SOM) return;
+  try {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    _audioCtx = _audioCtx || new AC();
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+    [[880, 0], [1180, 0.11]].forEach(function (t) {
+      var o = _audioCtx.createOscillator(), g = _audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = t[0];
+      var t0 = _audioCtx.currentTime + t[1];
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.16, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.1);
+      o.connect(g); g.connect(_audioCtx.destination);
+      o.start(t0); o.stop(t0 + 0.12);
+    });
+  } catch (x) { /* navegador sem áudio: segue sem avisar */ }
+}
+
+function avisarChegada(m, conversa) {
+  var minha = EU && m.autor_id === EU.user_id;
+  if (minha || m.origem === 'sistema') return;
+  if (conversa && conversa.silenciada) return;
+  tocarAviso();
+  if (document.hidden && window.Notification && Notification.permission === 'granted') {
+    try {
+      var n = new Notification((conversa && conversa.titulo) || 'Chat WGI', {
+        body: (m.autor ? m.autor + ': ' : '') + String(m.corpo || 'nova mensagem').slice(0, 120),
+        tag: m.conversa_id
+      });
+      n.onclick = function () { window.focus(); n.close(); };
+    } catch (x) {}
+  }
+}
+
+function alternarSom() {
+  SOM = !SOM;
+  try { localStorage.setItem('chat_som', SOM ? '1' : '0'); } catch (x) {}
+  $('#btSom').innerHTML = SOM ? '&#128276;' : '&#128277;';
+  $('#btSom').title = SOM ? 'Aviso sonoro ligado' : 'Aviso sonoro desligado';
+  if (SOM) {
+    tocarAviso();
+    if (window.Notification && Notification.permission === 'default') Notification.requestPermission();
+  }
+}
+
+/* ================================================================
+   Gravação de áudio
+   ================================================================ */
+function gravarAudio() {
+  if (GRAV) return pararGravacao(true);
+  if (!navigator.mediaDevices || !window.MediaRecorder)
+    return aviso('Este navegador não grava áudio.', true);
+
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+    var tipo = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg']
+      .filter(function (t) { return MediaRecorder.isTypeSupported(t); })[0] || '';
+    var mr = new MediaRecorder(stream, tipo ? { mimeType: tipo } : undefined);
+    var pedacos = [], t0 = Date.now();
+    mr.ondataavailable = function (e) { if (e.data && e.data.size) pedacos.push(e.data); };
+    mr.onstop = function () {
+      stream.getTracks().forEach(function (t) { t.stop(); });
+      clearInterval(GRAV.tick);
+      $('#gravBanner').hidden = true;
+      $('#btAudio').classList.remove('pri');
+      var cancelado = GRAV.cancelado, seg = GRAV.seg;
+      GRAV = null;
+      if (cancelado || !pedacos.length) return;
+      var blob = new Blob(pedacos, { type: mr.mimeType || 'audio/webm' });
+      var ext = (mr.mimeType || 'audio/webm').indexOf('mp4') >= 0 ? 'm4a' : 'webm';
+      var f = new File([blob], 'audio-' + Date.now() + '.' + ext, { type: blob.type });
+      f.__duracao = seg;
+      ANEXO = f;
+      $('#anxTxt').textContent = '🎙 Mensagem de áudio · ' + relogio(seg);
+      $('#anxBanner').hidden = false;
+    };
+    GRAV = { mr: mr, seg: 0, cancelado: false, tick: setInterval(function () {
+      GRAV.seg = Math.round((Date.now() - t0) / 1000);
+      $('#gravTempo').textContent = relogio(GRAV.seg);
+      if (GRAV.seg >= 300) pararGravacao(false);      // teto de 5 minutos
+    }, 250) };
+    mr.start();
+    $('#gravTempo').textContent = '0:00';
+    $('#gravBanner').hidden = false;
+    $('#btAudio').classList.add('pri');
+  }).catch(function () {
+    aviso('Não consegui usar o microfone. Verifique a permissão do navegador.', true);
+  });
+}
+
+function pararGravacao(cancelar) {
+  if (!GRAV) return;
+  GRAV.cancelado = !!cancelar;
+  try { GRAV.mr.stop(); } catch (x) {}
+}
+
+function relogio(s) {
+  s = Math.max(0, s | 0);
+  return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+}
+
+/* ================================================================
+   Corpo da mensagem: links, menções, quebras
+   ================================================================ */
+function corpoHtml(txt) {
+  var h = esc(txt);
+  h = h.replace(/(https?:\/\/[^\s<]+)/g,
+      '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  h = h.replace(/(^|\s)(@[\wÀ-ÿ.\-]+(?:\s[A-ZÀ-Ý][\wÀ-ÿ]+)?)/g,
+      '$1<span class="mencao">$2</span>');
+  return h;
+}
+
+/* ================================================================
+   Lista de conversas
+   ================================================================ */
+function carregarLista() {
+  return rpc('chat_lista', { p_incluir_arquivadas: FILTRO === 'arq' }).then(function (d) {
+    CONVERSAS = d || [];
+    pintarLista();
+    atualizarTitulo();
+  });
+}
+
+function atualizarTitulo() {
+  var n = CONVERSAS.reduce(function (s, c) { return s + (c.nao_lidas || 0); }, 0);
+  document.title = (n ? '(' + n + ') ' : '') + 'Chat · Wendell Global Interlining';
+  var m = CONVERSAS.reduce(function (s, c) { return s + (c.mencoes || 0); }, 0);
+  $('#subApp').textContent = n
+    ? n + ' não lida' + (n > 1 ? 's' : '') + (m ? ' · ' + m + ' menção' + (m > 1 ? 'ões' : '') : '')
+    : 'Wendell Global Interlining';
+}
+
+/* ---- trilho lateral: as conversas de quem está logado ---- */
+var CORES_TR = ['var(--wine)', 'var(--s3)', 'var(--s4)', 'var(--s2)', 'var(--s1)', 'var(--pos)'];
+function corDe(id) {
+  var n = 0, s = String(id || '');
+  for (var i = 0; i < s.length; i++) n = (n * 31 + s.charCodeAt(i)) >>> 0;
+  return CORES_TR[n % CORES_TR.length];
+}
+
+function pintarTrilho() {
+  var box = $('#trilho');
+  if (!box) return;
+  var eu = '<div class="tr-eu" title="' + esc((EU && EU.nome) || '') + '">' +
+           iniciais((EU && EU.nome) || '?') + '</div><div class="tr-risco"></div>';
+
+  var vis = CONVERSAS.filter(function (c) { return !c.arquivada; })
+    .sort(function (a, b) {
+      var na = (a.nao_lidas || 0) > 0 ? 1 : 0, nb = (b.nao_lidas || 0) > 0 ? 1 : 0;
+      if (na !== nb) return nb - na;
+      if (a.fixada !== b.fixada) return a.fixada ? -1 : 1;
+      return String(b.ultima_em || '').localeCompare(String(a.ultima_em || ''));
+    }).slice(0, 30);
+
+  box.innerHTML = eu + (vis.length ? vis.map(function (c) {
+    var marca = c.tipo === 'contexto' ? '◧' : iniciais(c.titulo);
+    var selo = c.mencoes ? '<span class="tr-selo at">@</span>'
+             : (c.nao_lidas ? '<span class="tr-selo">' +
+                (c.nao_lidas > 99 ? '99' : c.nao_lidas) + '</span>' : '');
+    return '<div class="tr-item' + (c.nao_lidas ? ' nova' : '') + '" data-tr="' + c.id + '"' +
+      (ATUAL && ATUAL.id === c.id ? ' aria-selected="true"' : '') +
+      ' style="background:' + corDe(c.id) + '" title="' + esc(c.titulo) +
+      (c.nao_lidas ? ' — ' + c.nao_lidas + ' não lida(s)' : '') + '">' +
+      marca + selo + '</div>';
+  }).join('') : '<div class="tr-vazio">sem<br>conversas</div>');
+}
+
+function pintarLista() {
+  var termo = ($('#filtroLista').value || '').toLowerCase();
+  pintarTrilho();
+  var box = $('#listaConversas'), html = '';
+  var vis = CONVERSAS.filter(function (c) {
+    if (FILTRO === 'nao' && !c.nao_lidas) return false;
+    if (FILTRO === 'arq' && !c.arquivada) return false;
+    if (FILTRO !== 'arq' && c.arquivada) return false;
+    if (['direta', 'grupo', 'contexto'].indexOf(FILTRO) >= 0 && c.tipo !== FILTRO) return false;
+    if (termo && String(c.titulo || '').toLowerCase().indexOf(termo) < 0) return false;
+    return true;
+  });
+  if (!vis.length) {
+    box.innerHTML = '<div class="vazio">Nenhuma conversa aqui.</div>';
+    return;
+  }
+  vis.forEach(function (c) {
+    var cls = c.tipo === 'grupo' ? 'g' : (c.tipo === 'contexto' ? 'k' : '');
+    var prev = c.ultima
+      ? (c.tipo !== 'direta' && c.ultima.autor ? c.ultima.autor.split(' ')[0] + ': ' : '') +
+        (c.ultima.corpo || '')
+      : 'Sem mensagens ainda';
+    html += '<div class="conv" data-id="' + c.id + '"' +
+      (ATUAL && ATUAL.id === c.id ? ' aria-selected="true"' : '') + '>' +
+      '<div class="av ' + cls + '">' +
+        (c.tipo === 'contexto' ? '◧' : iniciais(c.titulo)) + '</div>' +
+      '<div class="conv-txt">' +
+        '<div class="conv-top"><span class="conv-nome">' + esc(c.titulo) + '</span>' +
+        '<span class="conv-hora">' + hora(c.ultima_em) + '</span></div>' +
+        '<div class="conv-prev">' + esc(prev) + '</div>' +
+      '</div>' +
+      (c.mencoes ? '<span class="selo at">@</span>'
+                 : (c.nao_lidas ? '<span class="selo">' + c.nao_lidas + '</span>' : '')) +
+      '</div>';
+  });
+  box.innerHTML = html;
+}
+
+/* ================================================================
+   Conversa aberta
+   ================================================================ */
+function abrir(id, semRolar) {
+  var c = CONVERSAS.filter(function (x) { return x.id === id; })[0];
+  ATUAL = c || { id: id, titulo: 'Conversa', tipo: 'grupo' };
+  document.body.classList.remove('ver-lista');
+  $('#convTitulo').textContent = ATUAL.titulo || 'Conversa';
+  var ctx = '';
+  if (ATUAL.tipo === 'contexto') {
+    ctx = 'Vinculada a ' + esc(ATUAL.contexto_tipo || 'um registro');
+    if (ATUAL.contexto_ref) ctx += ' · <a href="' + esc(ATUAL.contexto_ref) +
+      '" target="_blank" rel="noopener">abrir o card</a>';
+  } else if (ATUAL.tipo === 'grupo') {
+    ctx = (ATUAL.membros || 0) + ' participantes';
+  }
+  $('#convCtx').innerHTML = ctx;
+  ['#btMembros', '#btBuscaConv', '#btMais'].forEach(function (s) { $(s).hidden = false; });
+  $('#comp').hidden = false;
+  pintarLista();
+  atualizarIa();
+  pintarAvatares();
+  return rpc('chat_ler', { p_conversa: id, p_limite: 80 }).then(function (d) {
+    MSGS = d || [];
+    pintarMsgs(!semRolar);
+    return rpc('chat_marcar_lida', { p_conversa: id });
+  }).then(function () {
+    var c2 = CONVERSAS.filter(function (x) { return x.id === id; })[0];
+    if (c2) { c2.nao_lidas = 0; c2.mencoes = 0; pintarLista(); atualizarTitulo(); }
+  }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function pintarMsgs(rolar) {
+  var box = $('#msgs');
+  if (!MSGS.length) {
+    box.innerHTML = '<div class="vazio">Nenhuma mensagem ainda. Diga o primeiro olá.</div>';
+    return;
+  }
+  var html = '', ultDia = '';
+  MSGS.forEach(function (m) {
+    var d = dataLonga(m.criado_em);
+    if (d !== ultDia) { html += '<div class="dia">' + d + '</div>'; ultDia = d; }
+    var meu = EU && m.autor_id === EU.user_id;
+    var sis = m.origem === 'sistema';
+    var ia = m.integracao === 'ia';
+    var aut = !ia && (m.origem === 'automacao' || m.origem === 'integracao');
+    var cls = 'msg' + (meu ? ' meu' : '') + (sis ? ' sis' : '') + (aut ? ' aut' : '') +
+              (ia ? ' ia' : '') + (m.apagada ? ' apagada' : '');
+    var anexos = (m.anexos || []).map(function (a) {
+      if (String(a.tipo || '').indexOf('audio') === 0) {
+        return '<div class="audio" data-audio="' + esc(a.caminho) + '">' +
+          '<span class="play">&#9654;</span><span class="onda"></span>' +
+          '<span style="opacity:.75">áudio</span></div>';
+      }
+      return '<div class="anexo" data-arq="' + esc(a.caminho) + '" data-nome="' + esc(a.nome) + '">' +
+        '<span>📎</span><span style="flex:1">' + esc(a.nome) + '</span>' +
+        '<span style="opacity:.7">' + tamanho(a.tamanho) + '</span></div>';
+    }).join('');
+    html += '<div class="' + cls + '" data-id="' + m.id + '">' +
+      '<div class="bolha">' +
+        (sis ? '' : '<div class="msg-autor">' + esc(m.autor || '—') +
+                    (aut ? ' · automático' : '') + '</div>') +
+        (m.resposta ? '<div class="cita"><strong>' + esc(m.resposta.autor) + '</strong><br>' +
+                      esc(m.resposta.corpo) + '</div>' : '') +
+        '<div class="msg-corpo">' +
+          (m.apagada ? 'mensagem apagada' : corpoHtml(m.corpo)) + '</div>' +
+        anexos +
+      '</div>' +
+      '<div class="msg-pe">' +
+        '<span>' + new Date(m.criado_em).toLocaleTimeString('pt-BR',
+          { hour: '2-digit', minute: '2-digit' }) + '</span>' +
+        (m.editada ? '<span>editada</span>' : '') +
+        (m.apagada ? '' : '<span class="acoes">' +
+          '<button data-ac="resp">responder</button>' +
+          (meu || (EU && EU.admin) ? '<button data-ac="edit">editar</button>' +
+                                     '<button data-ac="del">apagar</button>' : '') +
+          '</span>') +
+      '</div></div>';
+  });
+  box.innerHTML = html;
+  if (rolar !== false) box.scrollTop = box.scrollHeight;
+}
+
+function anexar(m) {
+  if (!ATUAL || m.conversa_id !== ATUAL.id) return;
+  if (MSGS.some(function (x) { return x.id === m.id; })) return;
+  MSGS.push(m);
+  var perto = $('#msgs').scrollHeight - $('#msgs').scrollTop - $('#msgs').clientHeight < 140;
+  pintarMsgs(perto);
+  rpc('chat_marcar_lida', { p_conversa: ATUAL.id });
+}
+
+/* ================================================================
+   Participantes no cabeçalho — discreto, clicável
+   ================================================================ */
+function pintarAvatares() {
+  var box = $('#avMembros');
+  if (!ATUAL) { box.innerHTML = ''; return; }
+  var alvo = ATUAL.id;
+  rpc('chat_membros_lista', { p_conversa: alvo }).then(function (ms) {
+    if (!ATUAL || ATUAL.id !== alvo) return;
+    ms = ms || [];
+    var max = 4, vis = ms.slice(0, max), resto = ms.length - vis.length;
+    var html = vis.map(function (m) {
+      return '<span class="av" title="' + esc(m.nome + ' · ' + m.email) + '">' +
+        iniciais(m.nome) + '</span>';
+    }).join('');
+    if (resto > 0) {
+      html += '<span class="av mais" title="' +
+        esc(ms.slice(max).map(function (m) { return m.nome; }).join(', ')) +
+        '">+' + resto + '</span>';
+    }
+    if (ATUAL.ia_ativa) html += '<span class="av ia" title="IA nesta conversa">IA</span>';
+    box.innerHTML = html;
+  }).catch(function () { box.innerHTML = ''; });
+}
+
+/* ================================================================
+   IA na conversa
+   ================================================================ */
+function iaDisponivel() {
+  return !!(EU && EU.config && EU.config.ia && EU.config.ia.ativa);
+}
+
+function atualizarIa() {
+  $('#btIa').hidden = !iaDisponivel() || !ATUAL;
+  $('#btPerguntarIa').hidden = true;
+  if (!iaDisponivel() || !ATUAL) return;
+  rpc('chat_conversa', { p_conversa: ATUAL.id }).then(function (c) {
+    if (!c || !ATUAL || c.id !== ATUAL.id) return;
+    ATUAL.ia_ativa = !!c.ia_ativa;
+    $('#btIa').setAttribute('aria-pressed', ATUAL.ia_ativa ? 'true' : 'false');
+    $('#btIa').title = ATUAL.ia_ativa ? 'A IA está nesta conversa — clique para tirar'
+                                      : 'Colocar a IA nesta conversa';
+    $('#btPerguntarIa').hidden = !ATUAL.ia_ativa;
+  }).catch(function () {});
+}
+
+function alternarIa() {
+  if (!ATUAL) return;
+  rpc('chat_ia_ligar', { p_conversa: ATUAL.id, p_valor: !ATUAL.ia_ativa })
+    .then(function () { return abrir(ATUAL.id, true); })
+    .then(atualizarIa)
+    .catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function perguntarIa() {
+  if (!ATUAL || !ATUAL.ia_ativa) return;
+  var txt = $('#entrada').value.trim();
+  if (!txt) return aviso('Escreva a pergunta antes de chamar a IA.', true);
+  $('#btPerguntarIa').disabled = true;
+  rpc('chat_enviar', { p_conversa: ATUAL.id, p_corpo: txt,
+                       p_responde_a: RESP ? RESP.id : null, p_anexos: [], p_mencoes: [] })
+    .then(function () { return rpc('chat_ia_solicitar', { p_conversa: ATUAL.id, p_prompt: txt }); })
+    .then(function () {
+      $('#entrada').value = ''; $('#entrada').style.height = 'auto'; limparResposta();
+      aviso('Pergunta na fila da IA. A resposta entra na conversa quando o serviço devolver.');
+      return abrir(ATUAL.id, true);
+    })
+    .catch(function (e) { aviso(erroDe(e), true); })
+    .then(function () { $('#btPerguntarIa').disabled = false; });
+}
+
+/* ================================================================
+   Envio
+   ================================================================ */
+function enviar() {
+  var txt = $('#entrada').value.trim();
+  if (/^\/ia\b/i.test(txt)) {
+    if (!ATUAL || !ATUAL.ia_ativa) return aviso('A IA não está nesta conversa.', true);
+    $('#entrada').value = txt.replace(/^\/ia\s*/i, '');
+    return perguntarIa();
+  }
+  if (!ATUAL || (!txt && !ANEXO)) return;
+  $('#btEnviar').disabled = true;
+  var emails = Object.keys(MENCOES).filter(function (e) { return txt.indexOf(MENCOES[e]) >= 0; });
+
+  var prep = Promise.resolve([]);
+  if (ANEXO) {
+    var nome = ANEXO.name.replace(/[^\w.\-]+/g, '_');
+    var caminho = ATUAL.id + '/' + Date.now() + '-' + nome;
+    prep = sb.storage.from('chat-anexos').upload(caminho, ANEXO).then(function (r) {
+      if (r.error) throw new Error('Falha ao enviar o anexo: ' + r.error.message);
+      return [{ nome: ANEXO.name, caminho: caminho, tipo: ANEXO.type, tamanho: ANEXO.size }];
+    });
+  }
+
+  prep.then(function (anexos) {
+    return rpc('chat_enviar', {
+      p_conversa: ATUAL.id, p_corpo: txt, p_responde_a: RESP ? RESP.id : null,
+      p_anexos: anexos, p_mencoes: emails
+    });
+  }).then(function () {
+    $('#entrada').value = ''; $('#entrada').style.height = 'auto';
+    MENCOES = {}; limparResposta(); limparAnexo();
+    return rpc('chat_ler', { p_conversa: ATUAL.id, p_limite: 80 });
+  }).then(function (d) {
+    MSGS = d || []; pintarMsgs(true); return carregarLista();
+  }).catch(function (e) { aviso(erroDe(e), true); })
+    .then(function () { $('#btEnviar').disabled = false; });
+}
+
+function limparResposta() { RESP = null; $('#respBanner').hidden = true; }
+function limparAnexo() { ANEXO = null; $('#arquivo').value = ''; $('#anxBanner').hidden = true; }
+
+/* ================================================================
+   Menções (@)
+   ================================================================ */
+var sugIdx = -1, sugLista = [];
+function fecharSug() { $('#sugest').hidden = true; sugIdx = -1; sugLista = []; }
+
+function verSugestao() {
+  var ta = $('#entrada'), pos = ta.selectionStart, txt = ta.value.slice(0, pos);
+  var m = txt.match(/@([\wÀ-ÿ.\-]*)$/);
+  if (!m) return fecharSug();
+  var q = m[1].toLowerCase();
+  sugLista = PESSOAS.filter(function (p) {
+    return !q || (p.nome || '').toLowerCase().indexOf(q) >= 0 ||
+                 (p.email || '').toLowerCase().indexOf(q) >= 0;
+  }).slice(0, 8);
+  if (!sugLista.length) return fecharSug();
+  sugIdx = 0;
+  $('#sugest').innerHTML = sugLista.map(function (p, i) {
+    return '<div data-i="' + i + '" class="' + (i === 0 ? 'on' : '') + '">' +
+      '<span class="av" style="width:22px;height:22px;font-size:9px">' + iniciais(p.nome) +
+      '</span><span>' + esc(p.nome) + '</span>' +
+      '<span style="margin-left:auto;color:var(--ink-3);font-size:10.5px">' +
+      esc(p.email) + '</span></div>';
+  }).join('');
+  $('#sugest').hidden = false;
+}
+
+function aplicarSug(i) {
+  var p = sugLista[i]; if (!p) return;
+  var ta = $('#entrada'), pos = ta.selectionStart, antes = ta.value.slice(0, pos);
+  var m = antes.match(/@([\wÀ-ÿ.\-]*)$/); if (!m) return fecharSug();
+  var apelido = '@' + (p.nome || p.email).split(' ')[0];
+  ta.value = antes.slice(0, antes.length - m[0].length) + apelido + ' ' + ta.value.slice(pos);
+  MENCOES[p.email] = apelido;
+  fecharSug(); ta.focus();
+  var novo = antes.length - m[0].length + apelido.length + 1;
+  ta.setSelectionRange(novo, novo);
+}
+
+/* ================================================================
+   Realtime
+   ================================================================ */
+function ligarRealtime() {
+  if (CANAL) sb.removeChannel(CANAL);
+  CANAL = sb.channel('chat-geral')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_mensagens' },
+      function (p) {
+        var m = p['new'];
+        var conv = CONVERSAS.filter(function (c) { return c.id === m.conversa_id; })[0];
+        avisarChegada({ autor_id: m.autor_id, autor: m.autor_nome, corpo: m.corpo,
+                        origem: m.origem, conversa_id: m.conversa_id }, conv);
+        if (ATUAL && m.conversa_id === ATUAL.id) {
+          anexar({
+            id: m.id, autor_id: m.autor_id, autor: m.autor_nome, email: m.autor_email,
+            origem: m.origem, corpo: m.corpo, apagada: !!m.excluida_em,
+            editada: !!m.editada_em, criado_em: m.criado_em, responde_a: m.responde_a,
+            anexos: [], metadados: m.metadados
+          });
+          // a mensagem chega antes dos anexos: relê para trazer o áudio/arquivo
+          if (m.metadados && m.metadados.anexos) {
+            setTimeout(function () { if (ATUAL && ATUAL.id === m.conversa_id) abrir(ATUAL.id, true); }, 900);
+          }
+        }
+        carregarLista();
+      })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_mensagens' },
+      function () { if (ATUAL) abrir(ATUAL.id, true); })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_membros' },
+      function () { carregarLista(); })
+    .subscribe();
+}
+
+/* ================================================================
+   Modais
+   ================================================================ */
+function abrirModal(id) { $(id).classList.add('on'); }
+function fecharModal(el) { el.classList.remove('on'); }
+$$('.modal').forEach(function (m) {
+  m.addEventListener('click', function (e) {
+    if (e.target === m || e.target.hasAttribute('data-fechar')) fecharModal(m);
+  });
+});
+
+function pintarPessoas() {
+  var q = ($('#buscaPessoa').value || '').toLowerCase();
+  var tipo = $('#tipoNova').querySelector('[aria-pressed="true"]').dataset.t;
+  $('#listaPessoas').innerHTML = PESSOAS.filter(function (p) {
+    return !q || (p.nome + ' ' + p.email).toLowerCase().indexOf(q) >= 0;
+  }).map(function (p) {
+    return '<label><input type="' + (tipo === 'direta' ? 'radio' : 'checkbox') +
+      '" name="pes" value="' + esc(p.email) + '"><span>' + esc(p.nome) +
+      '</span><span style="margin-left:auto;color:var(--ink-3);font-size:11px">' +
+      esc(p.email) + '</span></label>';
+  }).join('') || '<div class="vazio">Ninguém encontrado.</div>';
+}
+
+function criarConversa() {
+  var tipo = $('#tipoNova').querySelector('[aria-pressed="true"]').dataset.t;
+  var sel = $$('#listaPessoas input:checked').map(function (i) { return i.value; });
+  if (!sel.length) return aviso('Escolha ao menos uma pessoa.', true);
+  var p;
+  if (tipo === 'direta') {
+    p = rpc('chat_abrir_direta', { p_email: sel[0] });
+  } else {
+    var t = $('#novoTitulo').value.trim();
+    if (!t) return aviso('Dê um nome ao grupo.', true);
+    p = rpc('chat_criar_grupo', { p_titulo: t, p_emails: sel, p_descricao: $('#novoDesc').value });
+  }
+  p.then(function (id) {
+    fecharModal($('#mdNova'));
+    return carregarLista().then(function () { return abrir(id); });
+  }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function verMembros() {
+  if (!ATUAL) return;
+  rpc('chat_membros_lista', { p_conversa: ATUAL.id }).then(function (ms) {
+    $('#listaMembros').innerHTML = '<div class="lista-check">' + (ms || []).map(function (m) {
+      return '<label style="cursor:default"><span class="av" style="width:24px;height:24px;' +
+        'font-size:9.5px">' + iniciais(m.nome) + '</span><span>' + esc(m.nome) + '</span>' +
+        '<span class="tag">' + esc(m.papel) + '</span>' +
+        '<button class="bt min" data-sai="' + m.user_id + '" style="margin-left:auto">remover</button>' +
+        '</label>';
+    }).join('') + '</div>';
+    var dentro = (ms || []).map(function (m) { return m.email; });
+    $('#wrapAddMembro').style.display = ATUAL.tipo === 'direta' ? 'none' : 'flex';
+    $('#selAddMembro').innerHTML = PESSOAS.filter(function (p) {
+      return dentro.indexOf(p.email) < 0;
+    }).map(function (p) {
+      return '<option value="' + esc(p.email) + '">' + esc(p.nome) + '</option>';
+    }).join('');
+    abrirModal('#mdMembros');
+  }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function fazerBusca() {
+  var t = $('#termoBusca').value.trim(); if (!t) return;
+  rpc('chat_buscar', {
+    p_termo: t, p_conversa: $('#buscaSoConv').checked && ATUAL ? ATUAL.id : null
+  }).then(function (rs) {
+    $('#resultBusca').innerHTML = (rs || []).length
+      ? rs.map(function (r) {
+          return '<div class="conv" data-ir="' + r.conversa_id + '">' +
+            '<div class="conv-txt"><div class="conv-top">' +
+            '<span class="conv-nome">' + esc(r.conversa) + ' · ' + esc(r.autor) + '</span>' +
+            '<span class="conv-hora">' + hora(r.criado_em) + '</span></div>' +
+            '<div class="conv-prev" style="white-space:normal">' +
+            esc(r.trecho).replace(/«/g, '<mark>').replace(/»/g, '</mark>') +
+            '</div></div></div>';
+        }).join('')
+      : '<div class="vazio">Nada encontrado.</div>';
+  }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+/* ================================================================
+   Administração
+   ================================================================ */
+function admCarregar() {
+  rpc('chat_adm_resumo').then(function (r) {
+    var kp = [
+      ['Conversas', r.conversas], ['Grupos', r.grupos], ['Por negócio', r.contexto],
+      ['Mensagens (7d)', r.mensagens_7d], ['Na fila', r.eventos_pendentes],
+      ['Com erro', r.eventos_erro]
+    ];
+    $('#admKpis').innerHTML = kp.map(function (k) {
+      return '<div class="kpi"><div class="kpi-label">' + k[0] + '</div>' +
+        '<div class="kpi-value">' + (k[1] || 0) + '</div></div>';
+    }).join('');
+  }).catch(function (e) { aviso(erroDe(e), true); });
+  admUsuarios();
+}
+
+function admUsuarios() {
+  rpc('chat_adm_usuarios').then(function (us) {
+    $('#tbUsuarios').innerHTML =
+      '<thead><tr><th>Pessoa</th><th>Nível no hub</th><th>Papel no chat</th>' +
+      '<th>Grupo</th><th>Direta</th><th>Anexo</th><th>Bloqueado</th>' +
+      '<th class="num">Conversas</th><th class="num">Mensagens</th><th></th></tr></thead><tbody>' +
+      us.map(function (u) {
+        var sel = ['admin', 'usuario', 'leitor'].map(function (p) {
+          return '<option value="' + p + '"' + (u.papel === p ? ' selected' : '') + '>' +
+            (p === 'admin' ? 'Admin' : p === 'usuario' ? 'Usuário' : 'Leitor') + '</option>';
+        }).join('');
+        function ck(campo, val) {
+          return '<input type="checkbox" data-u="' + esc(u.email) + '" data-c="' + campo + '"' +
+                 (val ? ' checked' : '') + ' style="width:auto">';
+        }
+        return '<tr data-email="' + esc(u.email) + '">' +
+          '<td><strong>' + esc(u.nome) + '</strong><br>' +
+            '<span style="color:var(--ink-3);font-size:10.5px">' + esc(u.email) + '</span></td>' +
+          '<td><span class="tag">' + esc(u.nivel_central) + '</span></td>' +
+          '<td><select data-u="' + esc(u.email) + '" data-c="papel">' + sel + '</select>' +
+            (u.personalizado ? '' : '<div style="font-size:9.5px;color:var(--ink-3)">herdado</div>') +
+          '</td>' +
+          '<td>' + ck('grupo', u.pode_criar_grupo) + '</td>' +
+          '<td>' + ck('direta', u.pode_criar_direta) + '</td>' +
+          '<td>' + ck('anexar', u.pode_anexar) + '</td>' +
+          '<td>' + ck('bloqueado', u.bloqueado) + '</td>' +
+          '<td class="num">' + u.conversas + '</td>' +
+          '<td class="num">' + u.mensagens + '</td>' +
+          '<td><button class="bt min" data-salvar="' + esc(u.email) + '">Salvar</button> ' +
+            (u.personalizado ? '<button class="bt min" data-reset="' + esc(u.email) +
+              '">Herdar</button>' : '') + '</td></tr>';
+      }).join('') + '</tbody>';
+  }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function admSalvarUsuario(email) {
+  var tr = $('#tbUsuarios').querySelector('tr[data-email="' + email.replace(/"/g, '') + '"]');
+  function v(c) { var el = tr.querySelector('[data-c="' + c + '"]'); return el && el.checked; }
+  rpc('chat_adm_salvar_perfil', {
+    p_email: email, p_papel: tr.querySelector('[data-c="papel"]').value,
+    p_grupo: v('grupo'), p_direta: v('direta'), p_anexar: v('anexar'),
+    p_bloqueado: v('bloqueado')
+  }).then(function () { aviso('Permissões salvas.'); admUsuarios(); })
+    .catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function admConversas() {
+  rpc('chat_adm_conversas', { p_busca: $('#admBuscaConv').value || null }).then(function (cs) {
+    $('#tbConversas').innerHTML =
+      '<thead><tr><th>Conversa</th><th>Tipo</th><th>Contexto</th><th>Criada por</th>' +
+      '<th class="num">Pessoas</th><th class="num">Msgs</th><th>Última</th><th></th></tr></thead><tbody>' +
+      cs.map(function (c) {
+        return '<tr><td>' + esc(c.titulo || '—') + '</td>' +
+          '<td><span class="tag">' + esc(c.tipo) + '</span></td>' +
+          '<td style="font-size:10.5px;color:var(--ink-3)">' +
+            (c.contexto_tipo ? esc(c.contexto_tipo) + '<br>' + esc(c.contexto_id) : '—') + '</td>' +
+          '<td style="font-size:11px">' + esc(c.criado_por || '—') + '</td>' +
+          '<td class="num">' + c.membros + '</td><td class="num">' + c.mensagens + '</td>' +
+          '<td style="font-size:11px">' + (c.ultima_em ? hora(c.ultima_em) : '—') + '</td>' +
+          '<td><button class="bt min" data-entrar="' + c.id + '">Entrar</button> ' +
+            '<button class="bt min" data-apagar-conv="' + c.id + '">Excluir</button></td></tr>';
+      }).join('') + '</tbody>';
+  }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function admWebhooks() {
+  rpc('chat_adm_webhooks').then(function (ws) {
+    $('#tbWebhooks').innerHTML =
+      '<thead><tr><th>Nome</th><th>URL</th><th>Eventos</th><th>Filtro</th><th>Status</th>' +
+      '<th></th></tr></thead><tbody>' +
+      (ws.length ? ws.map(function (w) {
+        return '<tr><td><strong>' + esc(w.nome) + '</strong></td>' +
+          '<td style="font-size:10.5px;word-break:break-all">' + esc(w.url) + '</td>' +
+          '<td style="font-size:10.5px">' + esc((w.eventos || []).join(', ')) + '</td>' +
+          '<td style="font-size:10.5px">' + esc(JSON.stringify(w.filtro || {})) + '</td>' +
+          '<td>' + (w.ativo ? '<span class="tag ok">ativo</span>'
+                            : '<span class="tag">inativo</span>') + '</td>' +
+          '<td><button class="bt min" data-ed-wh=\'' + esc(JSON.stringify(w)) + '\'>Editar</button> ' +
+            '<button class="bt min" data-del-wh="' + w.id + '">Excluir</button></td></tr>';
+      }).join('') : '<tr><td colspan="6" class="vazio">Nenhum webhook cadastrado.</td></tr>') +
+      '</tbody>';
+  }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function nomeFunil(id) {
+  var f = FUNIS_ADM.filter(function (x) { return x.id === id; })[0];
+  return f ? f.nome : 'funil';
+}
+function nomeEtapaAdm(fid, eid) {
+  var f = FUNIS_ADM.filter(function (x) { return x.id === fid; })[0];
+  var e = f && (f.etapas || []).filter(function (x) { return x.id === eid; })[0];
+  return e ? e.nome : 'etapa';
+}
+function descreverCond(a) {
+  var c = a.condicoes || {}, p = [];
+  if (c.funil_id) p.push('funil ' + nomeFunil(c.funil_id));
+  if (c.etapa_id) p.push('etapa ' + nomeEtapaAdm(c.funil_id, c.etapa_id));
+  if (c.conversa_tipo) p.push('conversa ' + c.conversa_tipo);
+  if (c.contexto_tipo && !c.funil_id) p.push('contexto ' + c.contexto_tipo);
+  if (c.palavras) p.push('contendo "' + c.palavras.join('", "') + '"');
+  return p.length ? p.join(' · ') : 'qualquer caso';
+}
+function descreverAcoes(acoes) {
+  return (acoes || []).map(function (x) {
+    if (x.tipo === 'adicionar_membros') return 'inclui ' + (x.emails || []).length + ' pessoa(s)';
+    if (x.tipo === 'adicionar_membro') return 'inclui ' + (x.email || '');
+    if (x.tipo === 'postar_mensagem') return 'posta mensagem';
+    if (x.tipo === 'ativar_ia') return 'liga a IA';
+    if (x.tipo === 'webhook') return 'dispara webhook';
+    return x.tipo;
+  }).join(' · ') || '—';
+}
+
+function admAutomacoes() {
+  admCarregarFunis().then(function () { return rpc('chat_adm_automacoes'); }).then(function (as) {
+    $('#tbAutomacoes').innerHTML =
+      '<thead><tr><th>Nome</th><th>Gatilho</th><th>Condições</th><th>Ações</th>' +
+      '<th class="num">Execuções</th><th>Status</th><th></th></tr></thead><tbody>' +
+      (as.length ? as.map(function (a) {
+        return '<tr><td><strong>' + esc(a.nome) + '</strong>' +
+          (a.descricao ? '<br><span style="color:var(--ink-3);font-size:10.5px">' +
+            esc(a.descricao) + '</span>' : '') + '</td>' +
+          '<td><span class="tag' + (a.gatilho === 'card_criado' ? ' w' : '') + '">' +
+            (a.gatilho === 'card_criado' ? 'ao criar card' : esc(a.gatilho)) + '</span></td>' +
+          '<td style="font-size:10.5px">' + esc(descreverCond(a)) + '</td>' +
+          '<td style="font-size:10.5px">' + esc(descreverAcoes(a.acoes)) + '</td>' +
+          '<td class="num">' + a.execucoes + '</td>' +
+          '<td>' + (a.ativo ? '<span class="tag ok">ativa</span>'
+                            : '<span class="tag">parada</span>') + '</td>' +
+          '<td><button class="bt min" data-ed-au=\'' + esc(JSON.stringify(a)) + '\'>Editar</button> ' +
+            '<button class="bt min" data-del-au="' + a.id + '">Excluir</button></td></tr>';
+      }).join('') : '<tr><td colspan="7" class="vazio">Nenhuma automação.</td></tr>') + '</tbody>';
+  }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+function admEventos() {
+  rpc('chat_adm_eventos', { p_status: $('#admFiltroEv').value || null, p_limite: 200 })
+    .then(function (es) {
+      $('#tbEventos').innerHTML =
+        '<thead><tr><th class="num">#</th><th>Tipo</th><th>Quando</th><th>Status</th>' +
+        '<th>Payload</th><th></th></tr></thead><tbody>' +
+        (es.length ? es.map(function (e) {
+          var t = e.status === 'enviado' ? 'ok' : e.status === 'erro' ? 'no' :
+                  e.status === 'pendente' ? 'w' : '';
+          return '<tr><td class="num">' + e.id + '</td>' +
+            '<td><span class="tag">' + esc(e.tipo) + '</span></td>' +
+            '<td style="font-size:10.5px">' +
+              new Date(e.criado_em).toLocaleString('pt-BR') + '</td>' +
+            '<td><span class="tag ' + t + '">' + esc(e.status) + '</span>' +
+              (e.erro ? '<br><span style="font-size:10px;color:var(--neg)">' + esc(e.erro) +
+                '</span>' : '') + '</td>' +
+            '<td style="font-size:10px;max-width:420px;word-break:break-all">' +
+              esc(JSON.stringify(e.payload).slice(0, 220)) + '</td>' +
+            '<td><button class="bt min" data-refila="' + e.id + '">Reenfileirar</button> ' +
+              '<button class="bt min" data-ignora="' + e.id + '">Ignorar</button></td></tr>';
+        }).join('') : '<tr><td colspan="6" class="vazio">Fila vazia.</td></tr>') + '</tbody>';
+    }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+/* ---- automação "ao criar card": editor guiado, sem JSON à mão ---- */
+function admCarregarFunis() {
+  if (FUNIS_ADM.length) return Promise.resolve(FUNIS_ADM);
+  return rpc('chat_adm_funis').then(function (fs) { FUNIS_ADM = fs || []; return FUNIS_ADM; })
+    .catch(function () { return []; });
+}
+
+function acPreencherFunis(sel) {
+  $('#acFunil').innerHTML = '<option value="">Qualquer funil</option>' +
+    FUNIS_ADM.map(function (f) {
+      return '<option value="' + esc(f.id) + '"' + (sel === f.id ? ' selected' : '') + '>' +
+        esc(f.nome) + '</option>';
+    }).join('');
+}
+
+function acPreencherEtapas(sel) {
+  var f = FUNIS_ADM.filter(function (x) { return x.id === $('#acFunil').value; })[0];
+  $('#acEtapa').innerHTML = '<option value="">Qualquer etapa</option>' +
+    ((f && f.etapas) || []).map(function (e) {
+      return '<option value="' + esc(e.id) + '"' + (sel === e.id ? ' selected' : '') + '>' +
+        esc(e.nome) + '</option>';
+    }).join('');
+}
+
+function acPreencherPessoas(marcados) {
+  marcados = marcados || [];
+  rpc('chat_adm_usuarios').then(function (us) {
+    $('#acPessoas').innerHTML = (us || []).filter(function (u) { return u.ativo; })
+      .map(function (u) {
+        return '<label><input type="checkbox" value="' + esc(u.email) + '"' +
+          (marcados.indexOf(u.email) >= 0 ? ' checked' : '') + '><span>' + esc(u.nome) +
+          '</span><span style="margin-left:auto;color:var(--ink-3);font-size:11px">' +
+          esc(u.email) + '</span></label>';
+      }).join('') || '<div class="vazio">Nenhum usuário ativo.</div>';
+  });
+}
+
+function abrirAutoCard(a) {
+  admCarregarFunis().then(function () {
+    var c = (a && a.condicoes) || {}, acoes = (a && a.acoes) || [];
+    var emails = [];
+    acoes.forEach(function (x) {
+      if (x.tipo === 'adicionar_membros') emails = emails.concat(x.emails || []);
+      if (x.tipo === 'adicionar_membro' && x.email) emails.push(x.email);
+    });
+    var msg = (acoes.filter(function (x) { return x.tipo === 'postar_mensagem'; })[0] || {}).texto || '';
+    $('#acId').value = (a && a.id) || '';
+    $('#acNome').value = (a && a.nome) || '';
+    $('#acPalavras').value = (c.palavras || []).join(', ');
+    $('#acMsg').value = msg;
+    $('#acIa').checked = acoes.some(function (x) { return x.tipo === 'ativar_ia'; });
+    $('#acAtivo').checked = a ? !!a.ativo : true;
+    acPreencherFunis(c.funil_id || '');
+    acPreencherEtapas(c.etapa_id || '');
+    acPreencherPessoas(emails);
+    abrirModal('#mdAutoCard');
+  });
+}
+
+function salvarAutoCard() {
+  var emails = $$('#acPessoas input:checked').map(function (i) { return i.value; });
+  var acoes = [];
+  if (emails.length) acoes.push({ tipo: 'adicionar_membros', emails: emails });
+  if ($('#acMsg').value.trim()) acoes.push({ tipo: 'postar_mensagem', texto: $('#acMsg').value.trim() });
+  if ($('#acIa').checked) acoes.push({ tipo: 'ativar_ia' });
+  if (!acoes.length) return aviso('Escolha ao menos uma pessoa, uma mensagem ou a IA.', true);
+
+  var cond = { contexto_tipo: 'funil_card' };
+  if ($('#acFunil').value) cond.funil_id = $('#acFunil').value;
+  if ($('#acEtapa').value) cond.etapa_id = $('#acEtapa').value;
+  var pal = $('#acPalavras').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  if (pal.length) cond.palavras = pal;
+
+  rpc('chat_adm_salvar_automacao', { p: {
+    id: $('#acId').value || null,
+    nome: $('#acNome').value.trim() || 'Automação de card',
+    descricao: 'Ao criar card no funil', gatilho: 'card_criado',
+    condicoes: cond, acoes: acoes, ativo: $('#acAtivo').checked
+  } }).then(function () {
+    fecharModal($('#mdAutoCard')); admAutomacoes(); aviso('Automação de card salva.');
+  }).catch(function (e) { aviso(erroDe(e), true); });
+}
+
+/* ---- aba IA ---- */
+function admIa() {
+  var ia = ((EU && EU.config && EU.config.ia) || {});
+  $('#iaNome').value = ia.nome || 'Assistente WGI';
+  $('#iaAtiva').value = ia.ativa ? '1' : '0';
+  $('#iaAuto').value = ia.auto ? '1' : '0';
+  rpc('chat_adm_conversas', { p_busca: null }).then(function (cs) {
+    $('#iaTesteConv').innerHTML = (cs || []).slice(0, 60).map(function (c) {
+      return '<option value="' + c.id + '">' + esc(c.titulo || c.tipo) + '</option>';
+    }).join('');
+  }).catch(function () {});
+}
+
+function admConfig() {
+  var c = (EU && EU.config) || {};
+  $('#cfgNome').value = c.nome || 'Chat WGI';
+  $('#cfgAnexo').value = c.anexo_mb || 10;
+  $('#cfgRet').value = c.retencao_dias || 0;
+  $('#cfgFunis').value = c.url_funis || '';
+}
+
+/* ================================================================
+   Eventos de interface
+   ================================================================ */
+function ligarEventos() {
+  $('#filtros').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    $$('#filtros button').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+    b.setAttribute('aria-pressed', 'true');
+    FILTRO = b.dataset.f;
+    if (FILTRO === 'arq') carregarLista(); else pintarLista();
+  });
+  $('#filtroLista').addEventListener('input', pintarLista);
+
+  $('#listaConversas').addEventListener('click', function (e) {
+    var c = e.target.closest('.conv'); if (c) abrir(c.dataset.id);
+  });
+
+  $('#trilho').addEventListener('click', function (e) {
+    var t = e.target.closest('[data-tr]');
+    if (t) return abrir(t.dataset.tr);
+    if (e.target.closest('.tr-eu')) {                 // avatar de quem está logado
+      FILTRO = 'nao';
+      $$('#filtros button').forEach(function (x) {
+        x.setAttribute('aria-pressed', x.dataset.f === 'nao' ? 'true' : 'false');
+      });
+      document.body.classList.add('ver-lista');
+      pintarLista();
+    }
+  });
+
+  $('#msgs').addEventListener('click', function (e) {
+    var aud = e.target.closest('[data-audio]');
+    if (aud && !aud.querySelector('audio')) {
+      sb.storage.from('chat-anexos').createSignedUrl(aud.dataset.audio, 600).then(function (r) {
+        if (r.error) return aviso('Não consegui abrir o áudio.', true);
+        aud.innerHTML = '<audio controls autoplay preload="metadata" src="' +
+                        esc(r.data.signedUrl) + '"></audio>';
+      });
+      return;
+    }
+    if (aud) return;
+    var anx = e.target.closest('.anexo');
+    if (anx) {
+      sb.storage.from('chat-anexos').createSignedUrl(anx.dataset.arq, 120).then(function (r) {
+        if (r.error) return aviso('Não consegui abrir o anexo.', true);
+        window.open(r.data.signedUrl, '_blank', 'noopener');
+      });
+      return;
+    }
+    var b = e.target.closest('[data-ac]'); if (!b) return;
+    var id = e.target.closest('.msg').dataset.id;
+    var m = MSGS.filter(function (x) { return x.id === id; })[0]; if (!m) return;
+    if (b.dataset.ac === 'resp') {
+      RESP = m;
+      $('#respTxt').textContent = 'Respondendo ' + (m.autor || '') + ': ' +
+        String(m.corpo || '').slice(0, 70);
+      $('#respBanner').hidden = false; $('#entrada').focus();
+    } else if (b.dataset.ac === 'edit') {
+      var novo = prompt('Editar mensagem:', m.corpo || ''); if (novo == null) return;
+      rpc('chat_editar', { p_mensagem: id, p_corpo: novo })
+        .then(function () { return abrir(ATUAL.id, true); })
+        .catch(function (er) { aviso(erroDe(er), true); });
+    } else if (b.dataset.ac === 'del') {
+      if (!confirm('Apagar esta mensagem?')) return;
+      rpc('chat_excluir', { p_mensagem: id })
+        .then(function () { return abrir(ATUAL.id, true); })
+        .then(carregarLista)
+        .catch(function (er) { aviso(erroDe(er), true); });
+    }
+  });
+
+  var ta = $('#entrada');
+  ta.addEventListener('input', function () {
+    ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 150) + 'px';
+    verSugestao();
+  });
+  ta.addEventListener('keydown', function (e) {
+    if (!$('#sugest').hidden) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        sugIdx = (sugIdx + (e.key === 'ArrowDown' ? 1 : -1) + sugLista.length) % sugLista.length;
+        $$('#sugest div').forEach(function (d, i) { d.className = i === sugIdx ? 'on' : ''; });
+        return;
+      }
+      if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); aplicarSug(sugIdx); return; }
+      if (e.key === 'Escape') { fecharSug(); return; }
+    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); }
+  });
+  $('#sugest').addEventListener('click', function (e) {
+    var d = e.target.closest('[data-i]'); if (d) aplicarSug(+d.dataset.i);
+  });
+  $('#btEnviar').addEventListener('click', enviar);
+  $('#respCancel').addEventListener('click', limparResposta);
+  $('#anxCancel').addEventListener('click', limparAnexo);
+  $('#btAnexo').addEventListener('click', function () { $('#arquivo').click(); });
+  $('#arquivo').addEventListener('change', function () {
+    var f = this.files[0]; if (!f) return;
+    var lim = ((EU && EU.config && EU.config.anexo_mb) || 10) * 1048576;
+    if (f.size > lim) { limparAnexo(); return aviso('Arquivo maior que o limite.', true); }
+    ANEXO = f; $('#anxTxt').textContent = '📎 ' + f.name + ' · ' + tamanho(f.size);
+    $('#anxBanner').hidden = false;
+  });
+
+  $('#btAudio').addEventListener('click', gravarAudio);
+  $('#gravParar').addEventListener('click', function () { pararGravacao(false); });
+  $('#gravCancel').addEventListener('click', function () { pararGravacao(true); });
+  $('#btSom').addEventListener('click', alternarSom);
+  $('#btIa').addEventListener('click', alternarIa);
+  $('#btPerguntarIa').addEventListener('click', perguntarIa);
+  $('#avMembros').addEventListener('click', function () { if (ATUAL) verMembros(); });
+
+  $('#btNova').addEventListener('click', function () {
+    pintarPessoas(); abrirModal('#mdNova');
+  });
+  $('#tipoNova').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    $$('#tipoNova button').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+    b.setAttribute('aria-pressed', 'true');
+    var g = b.dataset.t === 'grupo';
+    $('#wrapTitGrupo').hidden = !g; $('#wrapDescGrupo').hidden = !g;
+    pintarPessoas();
+  });
+  $('#buscaPessoa').addEventListener('input', pintarPessoas);
+  $('#btCriarConversa').addEventListener('click', criarConversa);
+
+  $('#btMembros').addEventListener('click', verMembros);
+  $('#listaMembros').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-sai]'); if (!b) return;
+    if (!confirm('Remover esta pessoa da conversa?')) return;
+    rpc('chat_remover_membro', { p_conversa: ATUAL.id, p_user: b.dataset.sai })
+      .then(verMembros).then(carregarLista).then(pintarAvatares)
+      .catch(function (er) { aviso(erroDe(er), true); });
+  });
+  $('#btAddMembro').addEventListener('click', function () {
+    var em = $('#selAddMembro').value; if (!em) return;
+    rpc('chat_add_membro', { p_conversa: ATUAL.id, p_email: em })
+      .then(verMembros).then(carregarLista).then(pintarAvatares)
+      .then(function () { aviso('Participante adicionado.'); })
+      .catch(function (er) { aviso(erroDe(er), true); });
+  });
+
+  $('#btBuscaGlobal').addEventListener('click', function () {
+    $('#buscaSoConv').checked = false; abrirModal('#mdBusca'); $('#termoBusca').focus();
+  });
+  $('#btBuscaConv').addEventListener('click', function () {
+    $('#buscaSoConv').checked = true; abrirModal('#mdBusca'); $('#termoBusca').focus();
+  });
+  $('#btFazerBusca').addEventListener('click', fazerBusca);
+  $('#termoBusca').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') fazerBusca();
+  });
+  $('#resultBusca').addEventListener('click', function (e) {
+    var d = e.target.closest('[data-ir]'); if (!d) return;
+    fecharModal($('#mdBusca')); abrir(d.dataset.ir);
+  });
+
+  $('#btMais').addEventListener('click', function () {
+    if (!ATUAL) return;
+    var arq = ATUAL.arquivada ? 'desarquivar' : 'arquivar';
+    var o = prompt('Digite uma opção:\n  ' + arq + '\n  fechar\n  reabrir', arq);
+    if (!o) return;
+    var mapa = { arquivar: ['arquivada', true], desarquivar: ['arquivada', false],
+                 fechar: ['fechada', true], reabrir: ['fechada', false] };
+    var m = mapa[o.trim().toLowerCase()]; if (!m) return;
+    rpc('chat_marcar', { p_conversa: ATUAL.id, p_campo: m[0], p_valor: m[1] })
+      .then(carregarLista).then(function () { aviso('Conversa atualizada.'); })
+      .catch(function (er) { aviso(erroDe(er), true); });
+  });
+
+  $('#btVoltarLista').addEventListener('click', function () {
+    document.body.classList.add('ver-lista');
+  });
+
+  $('#btTema').addEventListener('click', function () {
+    var d = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', d ? 'light' : 'dark');
+    try { localStorage.setItem('chat_tema', d ? 'light' : 'dark'); } catch (x) {}
+  });
+
+  // ---- administração ----
+  $('#btAdm').addEventListener('click', function () {
+    document.body.classList.add('modo-adm');
+    $('#btAdm').hidden = true; $('#btVoltarChat').hidden = false;
+    admCarregar(); admConfig();
+  });
+  $('#btVoltarChat').addEventListener('click', function () {
+    document.body.classList.remove('modo-adm');
+    $('#btAdm').hidden = false; $('#btVoltarChat').hidden = true;
+  });
+  $('#admTabs').addEventListener('click', function (e) {
+    var b = e.target.closest('.tab'); if (!b) return;
+    $$('#admTabs .tab').forEach(function (x) { x.setAttribute('aria-selected', 'false'); });
+    b.setAttribute('aria-selected', 'true');
+    $$('.aba').forEach(function (a) { a.classList.remove('on'); });
+    $('#aba-' + b.dataset.a).classList.add('on');
+    ({ usuarios: admUsuarios, conversas: admConversas, webhooks: admWebhooks,
+       automacoes: admAutomacoes, eventos: admEventos, config: admConfig,
+       ia: admIa }[b.dataset.a] || function () {})();
+  });
+
+  $('#btNovaAutoCard').addEventListener('click', function () { abrirAutoCard(null); });
+  $('#acFunil').addEventListener('change', function () { acPreencherEtapas(''); });
+  $('#btSalvarAutoCard').addEventListener('click', salvarAutoCard);
+
+  $('#btSalvarIa').addEventListener('click', function () {
+    var cfg = Object.assign({}, (EU && EU.config) || {});
+    cfg.ia = { ativa: $('#iaAtiva').value === '1', nome: $('#iaNome').value.trim() || 'Assistente WGI',
+               auto: $('#iaAuto').value === '1' };
+    rpc('chat_adm_salvar_config', { p: cfg }).then(function () {
+      EU.config = cfg; aviso('Configuração da IA salva.'); atualizarIa();
+    }).catch(function (e) { aviso(erroDe(e), true); });
+  });
+  $('#btTesteIa').addEventListener('click', function () {
+    var c = $('#iaTesteConv').value, t = $('#iaTesteTxt').value.trim();
+    if (!c || !t) return aviso('Escolha a conversa e escreva o texto.', true);
+    rpc('chat_ia_responder', { p_conversa: c, p_texto: t }).then(function () {
+      $('#iaTesteTxt').value = ''; aviso('Resposta publicada como IA.');
+    }).catch(function (e) { aviso(erroDe(e), true); });
+  });
+  $('#tbUsuarios').addEventListener('click', function (e) {
+    var s = e.target.closest('[data-salvar]'); if (s) return admSalvarUsuario(s.dataset.salvar);
+    var r = e.target.closest('[data-reset]');
+    if (r) rpc('chat_adm_resetar_perfil', { p_email: r.dataset.reset })
+      .then(function () { aviso('Voltou a herdar do hub.'); admUsuarios(); })
+      .catch(function (er) { aviso(erroDe(er), true); });
+  });
+  $('#btAdmBuscaConv').addEventListener('click', admConversas);
+  $('#tbConversas').addEventListener('click', function (e) {
+    var en = e.target.closest('[data-entrar]');
+    if (en) return rpc('chat_adm_entrar', { p_id: en.dataset.entrar })
+      .then(carregarLista).then(function () { aviso('Você entrou na conversa.'); })
+      .catch(function (er) { aviso(erroDe(er), true); });
+    var ap = e.target.closest('[data-apagar-conv]');
+    if (ap && confirm('Excluir a conversa e todo o histórico? Não dá para desfazer.'))
+      rpc('chat_adm_excluir_conversa', { p_id: ap.dataset.apagarConv })
+        .then(admConversas).then(carregarLista).catch(function (er) { aviso(erroDe(er), true); });
+  });
+
+  $('#btNovoWebhook').addEventListener('click', function () {
+    $('#whId').value = ''; $('#whNome').value = ''; $('#whUrl').value = '';
+    $('#whSegredo').value = ''; $('#whEventos').value = 'mensagem.criada';
+    $('#whFiltro').value = '{}'; $('#whAtivo').checked = true;
+    abrirModal('#mdWebhook');
+  });
+  $('#tbWebhooks').addEventListener('click', function (e) {
+    var ed = e.target.closest('[data-ed-wh]');
+    if (ed) {
+      var w = JSON.parse(ed.getAttribute('data-ed-wh'));
+      $('#whId').value = w.id; $('#whNome').value = w.nome || ''; $('#whUrl').value = w.url || '';
+      $('#whSegredo').value = w.segredo || '';
+      $('#whEventos').value = (w.eventos || []).join('\n');
+      $('#whFiltro').value = JSON.stringify(w.filtro || {}, null, 1);
+      $('#whAtivo').checked = !!w.ativo;
+      return abrirModal('#mdWebhook');
+    }
+    var dl = e.target.closest('[data-del-wh]');
+    if (dl && confirm('Excluir este webhook?'))
+      rpc('chat_adm_excluir_webhook', { p_id: dl.dataset.delWh })
+        .then(admWebhooks).catch(function (er) { aviso(erroDe(er), true); });
+  });
+  $('#btSalvarWh').addEventListener('click', function () {
+    var filtro;
+    try { filtro = JSON.parse($('#whFiltro').value || '{}'); }
+    catch (x) { return aviso('O filtro não é um JSON válido.', true); }
+    rpc('chat_adm_salvar_webhook', { p: {
+      id: $('#whId').value || null, nome: $('#whNome').value, url: $('#whUrl').value,
+      segredo: $('#whSegredo').value,
+      eventos: $('#whEventos').value.split('\n').map(function (s) { return s.trim(); })
+        .filter(Boolean),
+      filtro: filtro, ativo: $('#whAtivo').checked
+    } }).then(function () {
+      fecharModal($('#mdWebhook')); admWebhooks(); aviso('Webhook salvo.');
+    }).catch(function (er) { aviso(erroDe(er), true); });
+  });
+
+  $('#btNovaAuto').addEventListener('click', function () {
+    $('#auId').value = ''; $('#auNome').value = ''; $('#auDesc').value = '';
+    $('#auGatilho').value = 'palavra_chave'; $('#auTipo').value = ''; $('#auCtx').value = '';
+    $('#auPalavras').value = '';
+    $('#auAcoes').value = '[{"tipo":"postar_mensagem","texto":"{autor} sinalizou um ponto urgente."}]';
+    $('#auAtivo').checked = true;
+    abrirModal('#mdAuto');
+  });
+  $('#tbAutomacoes').addEventListener('click', function (e) {
+    var ed = e.target.closest('[data-ed-au]');
+    if (ed && JSON.parse(ed.getAttribute('data-ed-au')).gatilho === 'card_criado') {
+      return abrirAutoCard(JSON.parse(ed.getAttribute('data-ed-au')));
+    }
+    if (ed) {
+      var a = JSON.parse(ed.getAttribute('data-ed-au')), c = a.condicoes || {};
+      $('#auId').value = a.id; $('#auNome').value = a.nome || '';
+      $('#auDesc').value = a.descricao || ''; $('#auGatilho').value = a.gatilho;
+      $('#auTipo').value = c.conversa_tipo || ''; $('#auCtx').value = c.contexto_tipo || '';
+      $('#auPalavras').value = (c.palavras || []).join(', ');
+      $('#auAcoes').value = JSON.stringify(a.acoes || [], null, 1);
+      $('#auAtivo').checked = !!a.ativo;
+      return abrirModal('#mdAuto');
+    }
+    var dl = e.target.closest('[data-del-au]');
+    if (dl && confirm('Excluir esta automação?'))
+      rpc('chat_adm_excluir_automacao', { p_id: dl.dataset.delAu })
+        .then(admAutomacoes).catch(function (er) { aviso(erroDe(er), true); });
+  });
+  $('#btSalvarAuto').addEventListener('click', function () {
+    var acoes;
+    try { acoes = JSON.parse($('#auAcoes').value || '[]'); }
+    catch (x) { return aviso('As ações não formam um JSON válido.', true); }
+    var cond = {};
+    if ($('#auTipo').value) cond.conversa_tipo = $('#auTipo').value;
+    if ($('#auCtx').value.trim()) cond.contexto_tipo = $('#auCtx').value.trim();
+    var pal = $('#auPalavras').value.split(',').map(function (s) { return s.trim(); })
+      .filter(Boolean);
+    if (pal.length) cond.palavras = pal;
+    rpc('chat_adm_salvar_automacao', { p: {
+      id: $('#auId').value || null, nome: $('#auNome').value, descricao: $('#auDesc').value,
+      gatilho: $('#auGatilho').value, condicoes: cond, acoes: acoes, ativo: $('#auAtivo').checked
+    } }).then(function () {
+      fecharModal($('#mdAuto')); admAutomacoes(); aviso('Automação salva.');
+    }).catch(function (er) { aviso(erroDe(er), true); });
+  });
+
+  $('#btRecarregarEv').addEventListener('click', admEventos);
+  $('#admFiltroEv').addEventListener('change', admEventos);
+  $('#btLimparEv').addEventListener('click', function () {
+    if (!confirm('Remover eventos já processados com mais de 30 dias?')) return;
+    rpc('chat_adm_limpar_eventos', { p_dias: 30 }).then(function (n) {
+      aviso(n + ' evento(s) removido(s).'); admEventos();
+    }).catch(function (er) { aviso(erroDe(er), true); });
+  });
+  $('#tbEventos').addEventListener('click', function (e) {
+    var r = e.target.closest('[data-refila]'), i = e.target.closest('[data-ignora]');
+    var alvo = r || i; if (!alvo) return;
+    rpc('chat_adm_evento_status', {
+      p_id: +(r ? r.dataset.refila : i.dataset.ignora),
+      p_status: r ? 'pendente' : 'ignorado'
+    }).then(admEventos).catch(function (er) { aviso(erroDe(er), true); });
+  });
+
+  $('#btSalvarCfg').addEventListener('click', function () {
+    var cfg = {
+      nome: $('#cfgNome').value, anexo_mb: +$('#cfgAnexo').value || 10,
+      retencao_dias: +$('#cfgRet').value || 0, url_funis: $('#cfgFunis').value.trim()
+    };
+    rpc('chat_adm_salvar_config', { p: cfg }).then(function () {
+      EU.config = cfg; aviso('Configurações salvas.');
+    }).catch(function (er) { aviso(erroDe(er), true); });
+  });
+
+  window.addEventListener('resize', function () {
+    $('#btVoltarLista').style.display = window.innerWidth <= 900 ? 'grid' : 'none';
+  });
+  $('#btVoltarLista').style.display = window.innerWidth <= 900 ? 'grid' : 'none';
+}
+
+/* ================================================================
+   Início
+   ================================================================ */
+function iniciar() {
+  sb = window.APP.sb;
+  if (EMBED) document.body.classList.add('embed');
+  try {
+    var t = localStorage.getItem('chat_tema');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  } catch (x) {}
+
+  return rpc('chat_meu_perfil').then(function (p) {
+    EU = p;
+    if (!EU || !EU.papel) {
+      document.body.innerHTML = '<div class="vazio" style="padding:60px">' +
+        'Sua conta não tem acesso ao chat. Peça a liberação na Central de Acesso.</div>';
+      throw new Error('sem-acesso');
+    }
+    $('#tituloApp').textContent = (EU.config && EU.config.nome) || 'Chat';
+    $('#btAdm').hidden = !EU.admin;
+    if (!EU.pode_anexar) {
+      $('#btAnexo').style.display = 'none';
+      $('#btAudio').style.display = 'none';
+    }
+    // som: padrão da organização, com a escolha de cada um por cima
+    SOM = (EU.config && EU.config.som) !== false;
+    try {
+      var s = localStorage.getItem('chat_som');
+      if (s !== null) SOM = s === '1';
+    } catch (x) {}
+    $('#btSom').innerHTML = SOM ? '&#128276;' : '&#128277;';
+    $('#btSom').title = SOM ? 'Aviso sonoro ligado' : 'Aviso sonoro desligado';
+    if (SOM && window.Notification && Notification.permission === 'default') {
+      document.addEventListener('click', function pedir() {
+        document.removeEventListener('click', pedir);
+        try { Notification.requestPermission(); } catch (x) {}
+      }, { once: true });
+    }
+    return rpc('chat_pessoas');
+  }).then(function (ps) {
+    PESSOAS = ps || [];
+    ligarEventos();
+    ligarRealtime();
+    return carregarLista();
+  }).then(function () {
+    // ---- rotas de entrada ----
+    var card = PARAMS.get('card'), conv = PARAMS.get('c'),
+        ctxT = PARAMS.get('ctx_tipo'), ctxI = PARAMS.get('ctx_id');
+    if (card) {
+      return rpc('chat_abrir_card', { p_card_id: card, p_ref: PARAMS.get('ref') || null })
+        .then(function (id) { return carregarLista().then(function () { return abrir(id); }); });
+    }
+    if (ctxT && ctxI) {
+      return rpc('chat_abrir_contexto', {
+        p_tipo: ctxT, p_id: ctxI, p_titulo: PARAMS.get('titulo'),
+        p_ref: PARAMS.get('ref'), p_emails: []
+      }).then(function (id) {
+        return carregarLista().then(function () { return abrir(id); });
+      });
+    }
+    if (conv) return abrir(conv);
+    if (window.innerWidth <= 900) document.body.classList.add('ver-lista');
+  }).catch(function (e) {
+    if (String(e && e.message) !== 'sem-acesso') aviso(erroDe(e), true);
+  });
+}
+
+window.APP.pronto.then(iniciar);
+})();
+</script>
+</body>
+</html>
