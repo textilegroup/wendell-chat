@@ -12,6 +12,9 @@
    Archivo, cards com cabeçalho de linha vinho, dark mode por tokens.
    =================================================================== */
 html,body{height:100%}
+/* o atributo hidden tem de vencer as classes com display: sem isto, a faixa de
+   anexo e a de resposta ocupam espaço mesmo vazias */
+[hidden]{display:none!important}
 body{display:flex;flex-direction:column;overflow:hidden}
 body.embed .app-header,body.embed [data-guard-barra]{display:none}
 body.embed .wrap{padding:0;grid-template-columns:1fr;gap:0}
@@ -1370,4 +1373,3 @@ window.APP.pronto.then(iniciar);
 </script>
 </body>
 </html>
-
