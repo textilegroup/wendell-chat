@@ -138,6 +138,9 @@ label.cmp>input,label.cmp>select,label.cmp>textarea{font-weight:400;letter-spaci
 .msg-pe{font-size:9.5px;color:var(--ink-3);display:flex;gap:6px;align-items:center;padding:0 4px}
 .msg.meu .msg-pe{justify-content:flex-end}
 .msg.apagada .msg-corpo{font-style:italic;color:var(--ink-3)}
+.leitura{display:inline-flex;flex-shrink:0}
+.leitura svg{width:13px;height:13px}
+.leitura.lida{color:var(--wine)}
 .msg.sis{align-self:center;max-width:90%}
 .msg.sis .bolha{background:transparent;border:0;box-shadow:none;text-align:center;
   color:var(--ink-3);font-size:11px;font-style:italic;padding:2px}
@@ -191,6 +194,7 @@ label.cmp>input,label.cmp>select,label.cmp>textarea{font-weight:400;letter-spaci
 .gravando{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--neg);
   background:var(--chip);border:1px solid var(--neg);border-radius:8px;padding:6px 10px;
   margin-bottom:6px}
+.digitando{font-size:11.5px;color:var(--ink-3);font-style:italic;padding:0 4px 4px}
 .gravando .bolinha{width:9px;height:9px;border-radius:50%;background:var(--neg);
   animation:pulsa 1s infinite}
 @keyframes pulsa{50%{opacity:.25}}
@@ -359,6 +363,7 @@ code{background:var(--chip);border:1px solid var(--line);border-radius:5px;paddi
         <button class="bt min" id="gravCancel">Descartar</button>
         <button class="bt min pri" id="gravParar">Concluir</button>
       </div>
+      <div class="digitando" id="digitandoAviso" hidden></div>
       <div class="caixa" style="position:relative">
         <div class="sugest" id="sugest" hidden></div>
         <button class="bt ic" id="btAnexo" title="Anexar arquivo"></button>
@@ -723,7 +728,9 @@ var ICONES = {
   duvida: '<circle cx="12" cy="12" r="8.2"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.1 2.8c-.6.2-.8.7-.8 1.3v.5M12 16.8h.01"/>',
   prazo: '<circle cx="12" cy="12" r="8.2"/><path d="M12 7.2V12l3 2"/>',
   visto: '<path d="M2.8 12S6.4 5.8 12 5.8 21.2 12 21.2 12 17.6 18.2 12 18.2 2.8 12 2.8 12z"/><circle cx="12" cy="12" r="2.7"/>',
-  nao: '<circle cx="12" cy="12" r="8.2"/><path d="M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6"/>'
+  nao: '<circle cx="12" cy="12" r="8.2"/><path d="M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6"/>',
+  /* confirmação de leitura — um traço = enviada, dois = lida */
+  checks: '<path d="M1.2 12.6 6 17.4 13.2 8.6"/><path d="M8.4 12.6 13.2 17.4 22.8 6.6"/>'
 };
 function ico(nome, cls) {
   return '<svg class="i ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true">' +
@@ -1013,6 +1020,7 @@ function abrir(id, semRolar) {
   var c = CONVERSAS.filter(function (x) { return x.id === id; })[0];
   ATUAL = c || { id: id, titulo: 'Conversa', tipo: 'grupo' };
   document.body.classList.remove('ver-lista');
+  esconderDigitando();
   $('#convTitulo').textContent = ATUAL.titulo || 'Conversa';
   var ctx = '';
   if (ATUAL.tipo === 'contexto') {
@@ -1064,6 +1072,17 @@ function pintarMsgs(rolar) {
         ico('clipe') + '<span style="flex:1">' + esc(a.nome) + '</span>' +
         '<span style="opacity:.7">' + tamanho(a.tamanho) + '</span></div>';
     }).join('');
+    var leitura = '';
+    if (meu && !sis && !m.apagada) {
+      var lp = m.lida_por || [];
+      var outros = Math.max(((ATUAL && ATUAL.membros) || 1) - 1, 0);
+      var todos = outros > 0 && lp.length >= outros;
+      var quem = lp.map(function (x) { return x.nome; }).filter(Boolean).join(', ');
+      leitura = '<span class="leitura' + (todos ? ' lida' : '') + '" title="' +
+        esc(lp.length ? ('Visto por ' + (quem || (lp.length + ' pessoa' + (lp.length > 1 ? 's' : ''))))
+                      : 'Enviada, ainda não vista') +
+        '">' + ico(lp.length ? 'checks' : 'ok', 'p') + '</span>';
+    }
     var reac = (m.reacoes || []).map(function (r) {
       var rot = (REACOES.filter(function (x) { return x[0] === r.simbolo; })[0] ||
                  [r.simbolo, r.simbolo])[1];
@@ -1089,6 +1108,7 @@ function pintarMsgs(rolar) {
         '<span>' + new Date(m.criado_em).toLocaleTimeString('pt-BR',
           { hour: '2-digit', minute: '2-digit' }) + '</span>' +
         (m.editada ? '<span>editada</span>' : '') +
+        leitura +
         (m.apagada || sis ? '' : '<span class="acoes">' +
           bt('reagir', 'reagir', 'Reagir') +
           bt('resp', 'responder', 'Responder') +
@@ -1359,9 +1379,52 @@ function aplicarSug(i) {
 /* ================================================================
    Realtime
    ================================================================ */
+/* Alguém leu uma mensagem minha: relê só os checkmarks, sem mexer na
+   rolagem nem marcar nada como lido de novo. */
+function atualizarLeituras(conversaId) {
+  if (!ATUAL || ATUAL.id !== conversaId) return;
+  rpc('chat_ler', { p_conversa: ATUAL.id, p_limite: 80 }).then(function (d) {
+    if (!ATUAL || ATUAL.id !== conversaId) return;
+    MSGS = d || [];
+    pintarMsgs(false);
+  }).catch(function () {});
+}
+
+var DIGITANDO_TIMERS = {};
+function mostrarDigitando(nome) {
+  var el = $('#digitandoAviso');
+  if (!el) return;
+  el.textContent = nome + ' está digitando…';
+  el.hidden = false;
+}
+function esconderDigitando() {
+  var el = $('#digitandoAviso');
+  if (el) el.hidden = true;
+}
+
 function ligarRealtime() {
   if (CANAL) sb.removeChannel(CANAL);
   CANAL = sb.channel('chat-geral')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_leituras' },
+      function (p) {
+        var l = p['new'];
+        if (EU && l.user_id === EU.user_id) return;
+        atualizarLeituras(l.conversa_id);
+      })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_leituras' },
+      function (p) {
+        var l = p['new'];
+        if (EU && l.user_id === EU.user_id) return;
+        atualizarLeituras(l.conversa_id);
+      })
+    .on('broadcast', { event: 'digitando' }, function (p) {
+      var d = p.payload || {};
+      if (!EU || d.user_id === EU.user_id) return;
+      if (!ATUAL || d.conversa_id !== ATUAL.id) return;
+      mostrarDigitando(d.nome || 'Alguém');
+      clearTimeout(DIGITANDO_TIMERS[d.user_id]);
+      DIGITANDO_TIMERS[d.user_id] = setTimeout(esconderDigitando, 3000);
+    })
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_mensagens' },
       function (p) {
         var m = p['new'];
@@ -1835,10 +1898,18 @@ function ligarEventos() {
     }
   });
 
-  var ta = $('#entrada');
+  var ta = $('#entrada'), ultimoAvisoDigitando = 0;
   ta.addEventListener('input', function () {
     ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 150) + 'px';
     verSugestao();
+    if (ATUAL && EU && CANAL && ta.value.trim()) {
+      var agora = Date.now();
+      if (agora - ultimoAvisoDigitando > 2500) {
+        ultimoAvisoDigitando = agora;
+        CANAL.send({ type: 'broadcast', event: 'digitando',
+          payload: { conversa_id: ATUAL.id, user_id: EU.user_id, nome: EU.nome || 'Alguém' } });
+      }
+    }
   });
   ta.addEventListener('keydown', function (e) {
     if (!$('#sugest').hidden) {
