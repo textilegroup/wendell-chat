@@ -138,9 +138,11 @@ label.cmp>input,label.cmp>select,label.cmp>textarea{font-weight:400;letter-spaci
 .msg-pe{font-size:9.5px;color:var(--ink-3);display:flex;gap:6px;align-items:center;padding:0 4px}
 .msg.meu .msg-pe{justify-content:flex-end}
 .msg.apagada .msg-corpo{font-style:italic;color:var(--ink-3)}
+.bolha-pe{display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:3px}
+.bolha-pe .bolha-hora{font-size:10px;color:rgba(255,255,255,.75)}
 .leitura{display:inline-flex;flex-shrink:0}
 .leitura svg{width:13px;height:13px}
-.leitura.lida{color:var(--wine)}
+.leitura.lida{color:var(--s3)}
 .msg.sis{align-self:center;max-width:90%}
 .msg.sis .bolha{background:transparent;border:0;box-shadow:none;text-align:center;
   color:var(--ink-3);font-size:11px;font-style:italic;padding:2px}
@@ -1072,6 +1074,7 @@ function pintarMsgs(rolar) {
         ico('clipe') + '<span style="flex:1">' + esc(a.nome) + '</span>' +
         '<span style="opacity:.7">' + tamanho(a.tamanho) + '</span></div>';
     }).join('');
+    var horaTxt = new Date(m.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     var leitura = '';
     if (meu && !sis && !m.apagada) {
       var lp = m.lida_por || [];
@@ -1083,6 +1086,9 @@ function pintarMsgs(rolar) {
                       : 'Enviada, ainda não vista') +
         '">' + ico(lp.length ? 'checks' : 'ok', 'p') + '</span>';
     }
+    var bolhaPe = (meu && !sis && !m.apagada)
+      ? '<div class="bolha-pe"><span class="bolha-hora">' + horaTxt + '</span>' + leitura + '</div>'
+      : '';
     var reac = (m.reacoes || []).map(function (r) {
       var rot = (REACOES.filter(function (x) { return x[0] === r.simbolo; })[0] ||
                  [r.simbolo, r.simbolo])[1];
@@ -1102,13 +1108,12 @@ function pintarMsgs(rolar) {
         '<div class="msg-corpo">' +
           (m.apagada ? 'mensagem apagada' : corpoHtml(m.corpo)) + '</div>' +
         anexos +
+        bolhaPe +
       '</div>' +
       (reac ? '<div class="reacoes">' + reac + '</div>' : '') +
       '<div class="msg-pe">' +
-        '<span>' + new Date(m.criado_em).toLocaleTimeString('pt-BR',
-          { hour: '2-digit', minute: '2-digit' }) + '</span>' +
+        (bolhaPe ? '' : '<span>' + horaTxt + '</span>') +
         (m.editada ? '<span>editada</span>' : '') +
-        leitura +
         (m.apagada || sis ? '' : '<span class="acoes">' +
           bt('reagir', 'reagir', 'Reagir') +
           bt('resp', 'responder', 'Responder') +
